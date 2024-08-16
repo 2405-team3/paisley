@@ -1,0 +1,22 @@
+{
+  "name": "paisley",
+  "description": "paisley rag tool",
+  "main": "cdk_cli.js",
+  "bin": {
+    "paisley": "cdk_cli.js"
+  },
+  "scripts": {
+    "start": "node cdk_cli.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1676.0",
+    "commander": "^12.1.0",
+    "inquirer": "^10.1.8"
+  },
+  "devDependencies": {
+    "@types/commander": "^2.12.2",
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^22.2.0"
+  },
+  "type": "module"
+}
