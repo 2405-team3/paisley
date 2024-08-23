@@ -92,8 +92,11 @@ program
       `AWS_KEY_PAIR_NAME=${answers.AWS_KEY_PAIR_NAME}\n` +
       `CONFIG_DB=configs\n` +
       `CONFIG_KB_COL=config_kb\n` +
-      `CONFIG_PIPELINE_COL=config_pipeline\n`;
-    
+      `CONFIG_PIPELINE_COL=config_pipeline\n` +
+      `\n`;
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
     const envFilePath = path.resolve(__dirname, '../.env');
     if (fs.existsSync(envFilePath)) {
       fs.appendFileSync(envFilePath, `\n${envContent.trim()}`);

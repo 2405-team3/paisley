@@ -18,12 +18,12 @@ git clone https://github.com/paisley-rag/cdk-cli
 
 npm install (can this just be done once from the root folder..?)
 ```
-cd /cdk-cli/cdk && npm install
-cd /cdk-cli/cli && npm install
+cd cdk-cli && npm install --prefix cdk && npm install --prefix cli
 ```
 
 
 use CLI to set env variables and deploy your AWS infra
+(should be able to use `npm run paisley env` or `npm run paisley deploy`)
 ```
 cd /cli
 node cdk_cli.js env
