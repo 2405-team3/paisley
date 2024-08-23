@@ -28,7 +28,7 @@ node cdk_cli.js deploy
 keep note of endpoints and IPs printed after deployment
 
 
-update
+update ec2 env variables
 ```
 bash update_env.sh
 ```
@@ -45,7 +45,7 @@ cd ~/db && pipenv install --verbose
 
 start shell
 ``
-pipenv shell
+cd ~/db && pipenv shell
 ```
 
 use scp to copy local CLI-created .env file into ~/db
@@ -63,33 +63,30 @@ setup postgres
 bash ~/db/setup_scripts/setup_postgres.sh
 ```
 
-Now DBs should be connected. Test DocDB with:
+Now DBs should be connected. Optionally test DocDB with:
 ```
 ~/db/util/list_mongo.py
 ```
 
-Copy `~/db/systemd/celery.service` and `~/db/systemd/test.service` to `/etc/systemd/system`
+Copy `celery.service` and `test.service` to `/etc/systemd/system`
 ```
 sudo cp ~/db/systemd/celery.service ~/db/systemd/test.service /etc/systemd/system && sudo systemctl daemon-reload
 ```
 
 
-NEXT STEP IS TO CHANGE CELERY.SERVICE AND TEST.SERVICE (NTS SHOULD RENAME LATER) TO USE DYNAMIC PATHING WITH NEW EC2
-
-nts
-`sudo systemctl start/status/stop xxx.service`
-
-nts
-see last ai chat for workaround to create a shell script sourcing from .env that starts the celery worker, then using that script in `celery.service` like:
-`ExecStart=/home/ubuntu/start_celery.sh`
-
-....
-
-more to complete
-
-....
+celery.service and test.service should now be runnable with (need to test with fresh instance)
+```
+sudo systemctl start test.service
+sudo systemctl start celery.service
+```
 
 
+...
+
+...test server/celery
+...auto build SPA?
+
+...
 
 
 destroy current deployment (from root folder, ie /ec23):
