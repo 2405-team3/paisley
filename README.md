@@ -39,6 +39,13 @@ bash update_env.sh
 ```
 
 
+
+use scp to copy local CLI-created .env file into ~/db
+```
+scp -ri [local aws pem key path] [local .env path] ubuntu@[EC2 IP]:~/db/.env
+```
+
+
 ssh into EC2 using Public IPv4 address
 ```
 ssh -i [local aws pem key path] ubuntu@[EC2 IP]
@@ -57,10 +64,6 @@ cd ~/db && pipenv shell
 ```
 
 
-use scp to copy local CLI-created .env file into ~/db
-```
-scp -ri [local aws pem key path] [local .env path] ubuntu@[EC2 IP]:~/db/.env
-```
 
 
 get global-bundle.pem for docdb
