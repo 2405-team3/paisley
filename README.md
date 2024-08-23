@@ -99,6 +99,7 @@ sudo systemctl start celery.service
 
 ...
 
+- test pipenv --venv thing from start_server in start_celery
 - test server/celery
 - auto build SPA?
 
