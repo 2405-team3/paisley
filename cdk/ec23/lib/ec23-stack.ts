@@ -1,6 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-// import { ConfigProps } from "./config";
+import { ConfigProps } from "./config";
 // import * as fs from 'fs'
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
@@ -10,7 +10,9 @@ import * as docdb from 'aws-cdk-lib/aws-docdb';
 import * as rds from 'aws-cdk-lib/aws-rds';
 
 
-type AwsEnvStackProps = cdk.StackProps
+type AwsEnvStackProps = cdk.StackProps & {
+  config: Readonly<ConfigProps>;
+};
 
 const INSTANCE_NUM = "xBB24x";
 
@@ -123,7 +125,7 @@ export class Ec23Stack extends cdk.Stack {
     )
 
     const keyPair = ec2.KeyPair.fromKeyPairAttributes(this, 'KeyPair', {
-      keyPairName: 'aws1', // add this as an .env variable
+      keyPairName: process.env.AWS_KEY_PAIR_NAME || '',
       type: ec2.KeyPairType.RSA,
     })
 
@@ -169,8 +171,8 @@ export class Ec23Stack extends cdk.Stack {
     // docdb cluster
     const docdbCluster = new docdb.DatabaseCluster(this, `CDKDocDBCluster-${INSTANCE_NUM}`, {
       masterUser: { 
-        username: 'docdbadmin',
-        password: cdk.SecretValue.unsafePlainText('docdbadmin')
+        username: process.env.MONGO_USERNAME || 'docdbadmin',
+        password: cdk.SecretValue.unsafePlainText(process.env.MONGO_PASSWORD || 'docdbadmin')
       },
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.R5, ec2.InstanceSize.LARGE),
       vpc,

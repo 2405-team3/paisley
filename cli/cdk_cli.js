@@ -68,6 +68,11 @@ program
         name: 'MONGO_PASSWORD',
         message: 'Select a password for your MongoDB Password:',
       },
+      {
+        type: 'input',
+        name: 'AWS_KEY_PAIR_NAME',
+        message: 'Select the name of the AWS key pair you will use:',
+      },
     ];
 
     const answers = await inquirer.prompt(questions);
@@ -80,16 +85,20 @@ program
       `PG_DATABASE=${answers.PG_DATABASE}\n` +
       `PG_USER=${answers.PG_USER}\n` +
       `PG_PASSWORD=${answers.PG_PASSWORD}\n` +
+      `MONGO_USERNAME=${answers.MONGO_USERNAME}\n` +
+      `MONGO_PASSWORD=${answers.MONGO_PASSWORD}\n` +
+      `AWS_KEY_PAIR_NAME=${answers.AWS_KEY_PAIR_NAME}\n` +
       `PG_ADMIN=postgres\n` +
       `PG_PORT=5432\n` +
       `CONFIG_DB=configs\n` +
       `CONFIG_KB_COL=config_kb\n` +
-      `CONFIG_PIPELINE_COL=config_pipeline`;
+      `CONFIG_PIPELINE_COL=config_pipeline\n`;
     
-    if (fs.existsSync('.env')) {
-      fs.appendFileSync('.env', `\n${envContent.trim()}`);
+    const envFilePath = path.resolve(__dirname, '../.env');
+    if (fs.existsSync(envFilePath)) {
+      fs.appendFileSync(envFilePath, `\n${envContent.trim()}`);
     } else {
-      fs.writeFileSync('.env', envContent.trim());
+      fs.writeFileSync(envFilePath, envContent.trim());
     }
     console.log('.env file created and environment variables set.');
   });
@@ -112,6 +121,7 @@ program
       }
     });
   });
+
 
 
 program.parse(process.argv);
