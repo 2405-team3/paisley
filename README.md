@@ -44,7 +44,7 @@ cd ~/db && pipenv install --verbose
 ```
 
 start shell
-``
+```
 cd ~/db && pipenv shell
 ```
 
