@@ -21,6 +21,8 @@ npm install (can this just be done once from the root folder..?)
 cd cdk-cli && npm install --prefix cdk && npm install --prefix cli
 ```
 
+Issues:
+had to `npm install` from `/cdk/ec23` folder
 
 use CLI to set env variables and deploy your AWS infra
 (should be able to use `npm run paisley env` or `npm run paisley deploy`)

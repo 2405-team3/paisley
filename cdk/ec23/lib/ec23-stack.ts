@@ -4,17 +4,23 @@ import { ConfigProps } from "./config";
 // import * as fs from 'fs'
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as docdb from 'aws-cdk-lib/aws-docdb';
 import * as rds from 'aws-cdk-lib/aws-rds';
 
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
-type AwsEnvStackProps = cdk.StackProps & {
-  config: Readonly<ConfigProps>;
-};
+// type AwsEnvStackProps = cdk.StackProps & {
+//   config: Readonly<ConfigProps>;
+// };
 
-const INSTANCE_NUM = "xBB24x";
+type AwsEnvStackProps = cdk.StackProps
+
+const INSTANCE_NUM = "xBB25x";
 
 export class Ec23Stack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: AwsEnvStackProps) {
@@ -209,7 +215,7 @@ export class Ec23Stack extends cdk.Stack {
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
       },
-      credentials: rds.Credentials.fromPassword('postgres', cdk.SecretValue.unsafePlainText(props?.config.PG_ADMINPW || '')),
+      credentials: rds.Credentials.fromPassword('postgres', cdk.SecretValue.unsafePlainText(process.env.PG_ADMINPW || 'admin')),
       multiAz: false,
       allocatedStorage: 20,
       maxAllocatedStorage: 100,
