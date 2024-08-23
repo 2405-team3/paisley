@@ -85,11 +85,11 @@ program
       `PG_DATABASE=${answers.PG_DATABASE}\n` +
       `PG_USER=${answers.PG_USER}\n` +
       `PG_PASSWORD=${answers.PG_PASSWORD}\n` +
+      `PG_ADMIN=postgres\n` +
+      `PG_PORT=5432\n` +
       `MONGO_USERNAME=${answers.MONGO_USERNAME}\n` +
       `MONGO_PASSWORD=${answers.MONGO_PASSWORD}\n` +
       `AWS_KEY_PAIR_NAME=${answers.AWS_KEY_PAIR_NAME}\n` +
-      `PG_ADMIN=postgres\n` +
-      `PG_PORT=5432\n` +
       `CONFIG_DB=configs\n` +
       `CONFIG_KB_COL=config_kb\n` +
       `CONFIG_PIPELINE_COL=config_pipeline\n`;
