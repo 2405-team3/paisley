@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Source the .env file to load existing environment variables, ignoring comments and empty lines
-if [ -f .env ]; then
+if [ -f ../.env ]; then
   export $(grep -v '^#' ../.env | xargs)
 fi
 
@@ -13,6 +13,7 @@ INSTANCE_PUBLIC_IP=$(aws cloudformation describe-stacks --stack-name Ec23Stack -
 MONGO_URI="mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${DOCUMENT_DB_ENDPOINT}:27017/?tls=true&tlsCAFile=global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
 
 # Write the output to the .env file
+echo -e "\n" >> ../.env
 echo "PG_HOST=$RDS_INSTANCE_ENDPOINT" >> ../.env
 echo "MONGO_URI=$MONGO_URI" >> ../.env
 echo "PUBLIC_IP=$INSTANCE_PUBLIC_IP" >> ../.env

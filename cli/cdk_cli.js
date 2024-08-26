@@ -90,9 +90,12 @@ program
       `MONGO_USERNAME=${answers.MONGO_USERNAME}\n` +
       `MONGO_PASSWORD=${answers.MONGO_PASSWORD}\n` +
       `AWS_KEY_PAIR_NAME=${answers.AWS_KEY_PAIR_NAME}\n` +
+      `DOCDB_NAME=simple\n` +
+      `DOCDB_COLLECTION=simple\n` +
       `CONFIG_DB=configs\n` +
       `CONFIG_KB_COL=config_kb\n` +
       `CONFIG_PIPELINE_COL=config_pipeline\n` +
+      `CONFIG_API_COL=config_api\n` +
       `\n`;
 
     const __filename = fileURLToPath(import.meta.url);

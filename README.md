@@ -18,7 +18,8 @@ git clone https://github.com/paisley-rag/cdk-cli
 
 npm install (can this just be done once from the root folder..?)
 ```
-cd cdk-cli && npm install --prefix cdk && npm install --prefix cli
+cd cdk-cli
+npm install --prefix cdk && npm install --prefix cli && npm install --prefix cdk/ec23
 ```
 
 Issues:
@@ -27,7 +28,7 @@ had to `npm install` from `/cdk/ec23` folder
 use CLI to set env variables and deploy your AWS infra
 (should be able to use `npm run paisley env` or `npm run paisley deploy`)
 ```
-cd /cli
+cd cli
 node cdk_cli.js env
 node cdk_cli.js deploy
 ```
@@ -35,7 +36,7 @@ keep note of endpoints and IPs printed after deployment
 
 
 
-update ec2 env variables
+update ec2 env variables (still from `cli` folder)
 ```
 bash update_env.sh
 ```
@@ -44,7 +45,7 @@ bash update_env.sh
 
 use scp to copy local CLI-created .env file into ~/db
 ```
-scp -ri [local aws pem key path] [local .env path] ubuntu@[EC2 IP]:~/db/.env
+scp -ri [local aws pem key path] [local cdk-cli/.env path] ubuntu@[EC2 IP]:~/db/.env
 ```
 
 
@@ -74,7 +75,7 @@ wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 ```
 
 
-setup postgres
+setup postgres (NEEDS TO BE UPDATED TO USE .ENV VARIABLES IN PG SETUP)
 ```
 bash ~/db/setup_scripts/setup_postgres.sh
 ```
@@ -92,11 +93,19 @@ sudo cp ~/db/systemd/celery.service ~/db/systemd/test.service /etc/systemd/syste
 ```
 
 
-celery.service and test.service should now be runnable with (need to test with fresh instance)
+celery.service and test.service should now be runnable with:
 ```
+sudo chmod +x /home/ubuntu/db/util/start_server.sh /home/ubuntu/db/util/start_celery.sh
 sudo systemctl start test.service
 sudo systemctl start celery.service
 ```
+
+
+
+NGINX GIVING 404; MAYBE BUILD UI FIRST?
+
+cd ~/db/ui
+npm 
 
 
 ...

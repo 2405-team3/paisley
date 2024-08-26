@@ -1,6 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { ConfigProps } from "./config";
+// import { ConfigProps } from "./config";
 // import * as fs from 'fs'
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
