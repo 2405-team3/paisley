@@ -49,9 +49,11 @@ install pipenv dependencies and start shell
 cd ~/db && pipenv install --verbose && pipenv shell 
 ```
 
-NTS: ADD `conf$nrconf{restart} = 'a';` TO `/etc/needrestart/needrestart.conf/` TO PREVENT
-'DAEMONS USING OUTDATED LIBRARIES' POPUP
 run setup_ec2.sh
+NTS: ADD `conf$nrconf{restart} = 'a';` TO `/etc/needrestart/needrestart.conf/` TO PREVENT 'DAEMONS USING OUTDATED LIBRARIES' POPUP
+```
+bash ~/db/setup_scripts/setup_ec2.sh
+```
     get global-bundle.pem for docdb
     ```
     cd ~ && wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
@@ -66,18 +68,8 @@ run setup_ec2.sh
     ```
     sudo cp ~/db/systemd/celery.service ~/db/systemd/test.service /etc/systemd/system && sudo systemctl daemon-reload
     ```
-
-    THESE DON'T WORK IN SCRIPT FOR SOME REASON
-    celery.service and test.service should now be runnable with:
-    ```
-    sudo chmod +x /home/ubuntu/db/util/start_server.sh
-    sudo systemctl start test.service
-    ```
-    ```
-    sudo chmod +x /home/ubuntu/db/util/start_celery.sh
-    sudo systemctl start celery.service
-    ```
-
+    NTS: TRY REMOVING `index.nginx-debian.html` FROM `/etc/nginx/sites-enabled/default`;
+    THINK THAT MIGHT SOLVE THE REFRESH -> NGINX 404 ISSUE
     copy `~/db/nginx/default` to `/etc/nginx/sites-enabled` and 
     copy `~/db/nginx/nginx.conf` to `/etc/nginx`
     ```
@@ -87,10 +79,13 @@ run setup_ec2.sh
     ```
 
 
-try testing with postman...
-"works" but invalid API key (more bugs probably behind this error)
-CURRENTLY GOING TO BYPASS API AUTH UNTIL I CAN REACH OUT TO JAMES (OR JUST LOOK THRU IT MORE)
-(NTS, check out `db/util/init_api_db.py`)
+MAKE THIS PART OF THE ABOVE SCRIPT?
+initialize api key db; add first generated API key to .env (additional API key changes must be manual)
+```
+cd ~ && python ~/db/util/init_api_db.py
+    ```
+
+
 
 BUILD UI
 install nvm
@@ -133,23 +128,35 @@ run build_ui.sh
     sudo mv ~/db/ui/dist/index.html /var/www/html
     ```
 
+start services:
+celery.service and test.service should now be runnable with:
+```
+sudo chmod +x /home/ubuntu/db/util/start_server.sh
+sudo systemctl start test.service
+```
+```
+sudo chmod +x /home/ubuntu/db/util/start_celery.sh
+sudo systemctl start celery.service
+```
+
+test services are running:
+```
+sudo systemctl status test.service
+```
+```
+sudo systemctl status celery.service
+```
 
 
 visit IP address in browser
-
-ISSUES WITH SQS-EC2 PERMISSIONS, CHANGED IAM IN STACK AND REDEPLOYING
-
-
-...
-
-- test pipenv --venv thing from start_server in start_celery
-- test server/celery
-- auto build SPA?
-
-...
-
-
-destroy current deployment (from root folder, ie /ec23):
+to see public ip:
 ```
-cdk destroy
+grep 'PUBLIC_IP' ~/db/.env
+```
+
+
+
+destroy current deployment (from `cdk-cli/cli`):
+```
+node cdk_cli.js destroy
 ```

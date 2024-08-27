@@ -24,12 +24,12 @@ program
 program
   .command('deploy')
   .description('Builds, synthesizes, and deploys Paisley on AWS')
-  .action(deployCDK);
+  .action(deployCDK)
 
 program
   .command('destroy')
   .description('Destroys Paisley AWS infrastructure')
-  .action(destroyCDK);
+  .action(destroyCDK)
 
 program
   .command('copy-env')
