@@ -32,77 +32,59 @@ node cdk_cli.js deploy
 ```
 keep note of endpoints and IPs printed after deployment
 
-
-
-update ec2 env variables (still from `cli` folder)
+copy env file to EC2
 ```
-bash update_env.sh
+node cdk_cli.js copy-env
 ```
 
-
-
-use scp to copy local CLI-created .env file into ~/db
+ssh into EC2
 ```
-scp -ri [local aws pem key path] [local cdk-cli/.env path] ubuntu@[EC2 IP]:~/db/.env
-```
-
-
-ssh into EC2 using Public IPv4 address
-```
-ssh -i [local aws pem key path] ubuntu@[EC2 IP]
-```
-
-
-install pipenv dependencies
-```
-cd ~/db && pipenv install --verbose
-```
-
-
-start shell
-```
-cd ~/db && pipenv shell
+node cdk_cli.js ssh
 ```
 
 
 
-
-get global-bundle.pem for docdb
+install pipenv dependencies and start shell
 ```
-cd ~ && wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
-```
-
-
-setup postgres
-```
-bash ~/db/setup_scripts/setup_postgres.sh
+cd ~/db && pipenv install --verbose && pipenv shell 
 ```
 
+NTS: ADD `conf$nrconf{restart} = 'a';` TO `/etc/needrestart/needrestart.conf/` TO PREVENT
+'DAEMONS USING OUTDATED LIBRARIES' POPUP
+run setup_ec2.sh
+    get global-bundle.pem for docdb
+    ```
+    cd ~ && wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+    ```
 
-Copy `celery.service` and `test.service` to `/etc/systemd/system`
-```
-sudo cp ~/db/systemd/celery.service ~/db/systemd/test.service /etc/systemd/system && sudo systemctl daemon-reload
-```
+    setup postgres
+    ```
+    bash ~/db/setup_scripts/setup_postgres.sh
+    ```
 
+    Copy `celery.service` and `test.service` to `/etc/systemd/system`
+    ```
+    sudo cp ~/db/systemd/celery.service ~/db/systemd/test.service /etc/systemd/system && sudo systemctl daemon-reload
+    ```
 
-celery.service and test.service should now be runnable with:
-```
-sudo chmod +x /home/ubuntu/db/util/start_server.sh
-sudo systemctl start test.service
-```
-```
-sudo chmod +x /home/ubuntu/db/util/start_celery.sh
-sudo systemctl start celery.service
-```
+    THESE DON'T WORK IN SCRIPT FOR SOME REASON
+    celery.service and test.service should now be runnable with:
+    ```
+    sudo chmod +x /home/ubuntu/db/util/start_server.sh
+    sudo systemctl start test.service
+    ```
+    ```
+    sudo chmod +x /home/ubuntu/db/util/start_celery.sh
+    sudo systemctl start celery.service
+    ```
 
-copy `~/db/nginx/default` to `/etc/nginx/sites-enabled` and 
-copy `~/db/nginx/nginx.conf` to `/etc/nginx`
-```
-sudo cp ~db/nginx/default /etc/nginx/sites-enabled &&
-sudo cp ~/db/nginx/nginx.conf /etc/nginx &&
-sudo systemctl reload nginx
-```
-
+    copy `~/db/nginx/default` to `/etc/nginx/sites-enabled` and 
+    copy `~/db/nginx/nginx.conf` to `/etc/nginx`
+    ```
+    sudo cp ~db/nginx/default /etc/nginx/sites-enabled &&
+    sudo cp ~/db/nginx/nginx.conf /etc/nginx &&
+    sudo systemctl reload nginx
+    ```
 
 
 try testing with postman...
@@ -110,14 +92,14 @@ try testing with postman...
 CURRENTLY GOING TO BYPASS API AUTH UNTIL I CAN REACH OUT TO JAMES (OR JUST LOOK THRU IT MORE)
 (NTS, check out `db/util/init_api_db.py`)
 
-going to try to build the UI (...is this too much?):
-
+BUILD UI
 install nvm
 ```
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
 ```
 
-restart terminal (try `source ~/.bashrc` maybe?)
+restart terminal (and ssh into EC2)
+
 download and install Node.js
 ```
 nvm install 20
@@ -130,20 +112,28 @@ node -v && npm -v
 
 install vite
 ```
-npm install vite --save-dev
+cd ~/db/ui && npm install vite --save-dev
 ```
 
+run build_ui.sh
+    build front end
+    ```
+    cd ~/db/ui && npm run build
+    ```
 
-build front end
-```
-cd ~/db/ui && npm run build
-```
+    delete old build files (ADD USER CONFIRMATION)
+    ```
+    sudo rm -rf /var/www/html/assets
+    sudo rm /var/www/html/index.html
+    ```
 
-move build files
-```
-sudo mv ~/db/ui/dist/assets /var/www/html
-sudo mv ~/db/ui/dist/index.html /var/www/html
-```
+    move build files
+    ```
+    sudo mv ~/db/ui/dist/assets /var/www/html
+    sudo mv ~/db/ui/dist/index.html /var/www/html
+    ```
+
+
 
 visit IP address in browser
 
