@@ -56,6 +56,7 @@ export class Ec23Stack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSQSFullAccess')
       ],
     });
 
@@ -86,7 +87,9 @@ export class Ec23Stack extends cdk.Stack {
       
 
       `echo -e "\n\n\n ----- GIT CLONE ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'git clone https://github.com/2405-team3/db.git /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
+      // CHANGE THIS BACK AFTER CDK PROCESS HAS BEEN TESTED
+      // 'git clone https://github.com/2405-team3/db.git /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
+      'git clone -b fix/cdk2 https://github.com/paisley-rag/db /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
       'while [ ! -d /home/ubuntu/db ]; do sleep 1; done', // Check if the directory /home/ubuntu/db exists before running the next commands
 
 

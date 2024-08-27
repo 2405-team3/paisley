@@ -22,8 +22,6 @@ cd cdk-cli
 npm install --prefix cdk && npm install --prefix cli && npm install --prefix cdk/ec23
 ```
 
-Issues:
-had to `npm install` from `/cdk/ec23` folder
 
 use CLI to set env variables and deploy your AWS infra
 (should be able to use `npm run paisley env` or `npm run paisley deploy`)
@@ -75,7 +73,7 @@ wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 ```
 
 
-setup postgres (NEEDS TO BE UPDATED TO USE .ENV VARIABLES IN PG SETUP)
+setup postgres
 ```
 bash ~/db/setup_scripts/setup_postgres.sh
 ```
@@ -95,18 +93,45 @@ sudo cp ~/db/systemd/celery.service ~/db/systemd/test.service /etc/systemd/syste
 
 celery.service and test.service should now be runnable with:
 ```
-sudo chmod +x /home/ubuntu/db/util/start_server.sh /home/ubuntu/db/util/start_celery.sh
+sudo chmod +x /home/ubuntu/db/util/start_server.sh
 sudo systemctl start test.service
+```
+```
+sudo chmod +x /home/ubuntu/db/util/start_celery.sh
 sudo systemctl start celery.service
 ```
 
 
+copy `~db/nginx/default` to `/etc/nginx/sites-enabled`
+copy `~db/nginx/nginx.conf` to `/etc/nginx`
 
-NGINX GIVING 404; MAYBE BUILD UI FIRST?
+try testing with postman...
+"works" but invalid API key (more bugs probably behind this error)
+CURRENTLY GOING TO BYPASS API AUTH UNTIL I CAN REACH OUT TO JAMES (OR JUST LOOK THRU IT MORE)
+(NTS, check out `db/util/init_api_db.py`)
 
-cd ~/db/ui
-npm 
+going to try to build the UI (...is this too much?):
 
+install nvm
+```
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+```
+
+restart terminal (try `source ~/.bashrc` maybe?)
+download and install Node.js
+```
+nvm install 20
+```
+
+verify install
+```
+node -v && npm -v
+```
+
+install vite
+```
+npm install vite --save-dev
+```
 
 ...
 
