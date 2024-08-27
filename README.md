@@ -18,7 +18,7 @@ git clone https://github.com/paisley-rag/cdk-cli
 npm install
 ```
 cd cdk-cli
-npm install --prefix cdk && npm install --prefix cli && npm install --prefix cdk/ec23
+npm install --prefix cdk cli cdk/ec23
 ```
 
 install paisley package globally
