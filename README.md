@@ -9,7 +9,6 @@ npm install -g aws-cdk
 aws configure
 ```
 
-
 clone cdk & cli
 ```
 git clone https://github.com/paisley-rag/cdk-cli
@@ -50,7 +49,6 @@ cd ~/db && pipenv install --verbose && pipenv shell
 ```
 
 run setup_ec2.sh
-NTS: ADD `conf$nrconf{restart} = 'a';` TO `/etc/needrestart/needrestart.conf/` TO PREVENT 'DAEMONS USING OUTDATED LIBRARIES' POPUP
 ```
 bash ~/db/setup_scripts/setup_ec2.sh
 ```
@@ -68,8 +66,7 @@ bash ~/db/setup_scripts/setup_ec2.sh
     ```
     sudo cp ~/db/systemd/celery.service ~/db/systemd/test.service /etc/systemd/system && sudo systemctl daemon-reload
     ```
-    NTS: TRY REMOVING `index.nginx-debian.html` FROM `/etc/nginx/sites-enabled/default`;
-    THINK THAT MIGHT SOLVE THE REFRESH -> NGINX 404 ISSUE
+    ```
     copy `~/db/nginx/default` to `/etc/nginx/sites-enabled` and 
     copy `~/db/nginx/nginx.conf` to `/etc/nginx`
     ```
@@ -83,7 +80,7 @@ MAKE THIS PART OF THE ABOVE SCRIPT?
 initialize api key db; add first generated API key to .env (additional API key changes must be manual)
 ```
 cd ~ && python ~/db/util/init_api_db.py
-    ```
+```
 
 
 
@@ -153,7 +150,6 @@ to see public ip:
 ```
 grep 'PUBLIC_IP' ~/db/.env
 ```
-
 
 
 destroy current deployment (from `cdk-cli/cli`):
