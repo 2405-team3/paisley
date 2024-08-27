@@ -15,7 +15,7 @@ git clone https://github.com/paisley-rag/cdk-cli
 ```
 
 
-npm install (can this just be done once from the root folder..?)
+npm install
 ```
 cd cdk-cli
 npm install --prefix cdk && npm install --prefix cli && npm install --prefix cdk/ec23
@@ -42,6 +42,7 @@ node cdk_cli.js ssh
 ```
 
 
+From within new EC2:
 
 install pipenv dependencies and start shell
 ```
@@ -52,31 +53,28 @@ run setup_ec2.sh
 ```
 bash ~/db/setup_scripts/setup_ec2.sh
 ```
-    get global-bundle.pem for docdb
-    ```
-    cd ~ && wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
-    ```
+START OF COMMANDS IN `setup_ec2.sh` (DELETE WHEN TESTED AND WORKING)
+```
+# get global-bundle.pem for docdb
+cd ~ && wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 
-    setup postgres
-    ```
-    bash ~/db/setup_scripts/setup_postgres.sh
-    ```
+# setup postgres
+bash ~/db/setup_scripts/setup_postgres.sh
 
-    Copy `celery.service` and `test.service` to `/etc/systemd/system`
-    ```
-    sudo cp ~/db/systemd/celery.service ~/db/systemd/test.service /etc/systemd/system && sudo systemctl daemon-reload
-    ```
-    ```
-    copy `~/db/nginx/default` to `/etc/nginx/sites-enabled` and 
-    copy `~/db/nginx/nginx.conf` to `/etc/nginx`
-    ```
-    sudo cp ~db/nginx/default /etc/nginx/sites-enabled &&
-    sudo cp ~/db/nginx/nginx.conf /etc/nginx &&
-    sudo systemctl reload nginx
-    ```
+# Copy `celery.service` and `test.service` to `/etc/systemd/system`
+sudo cp ~/db/systemd/celery.service ~/db/systemd/test.service /etc/systemd/system && sudo systemctl daemon-reload
+
+# copy `~/db/nginx/default` to `/etc/nginx/sites-enabled` and 
+# copy `~/db/nginx/nginx.conf` to `/etc/nginx`
+
+sudo cp ~db/nginx/default /etc/nginx/sites-enabled &&
+sudo cp ~/db/nginx/nginx.conf /etc/nginx &&
+sudo systemctl reload nginx
+```
+END OF COMMANDS IN `setup_ec2.sh`
 
 
-MAKE THIS PART OF THE ABOVE SCRIPT?
+TEST PUTTING THIS PART AT END OF `setup_ec2.sh`
 initialize api key db; add first generated API key to .env (additional API key changes must be manual)
 ```
 cd ~ && python ~/db/util/init_api_db.py
@@ -84,13 +82,16 @@ cd ~ && python ~/db/util/init_api_db.py
 
 
 
-BUILD UI
+BUILD UI (involves installing `nvm` and `vite`)
 install nvm
 ```
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
 ```
 
-restart terminal (and ssh into EC2)
+restart terminal and ssh back into EC2
+```
+node cdk_cli.js ssh
+```
 
 download and install Node.js
 ```
@@ -108,24 +109,31 @@ cd ~/db/ui && npm install vite --save-dev
 ```
 
 run build_ui.sh
-    build front end
-    ```
-    cd ~/db/ui && npm run build
-    ```
+```
+bash ~/db/setup_scripts/build_ui.sh
+```
+START OF COMMANDS IN `build_ui.sh` (DELETE WHEN TESTED AND WORKING)
+build front end
+```
+cd ~/db/ui && npm run build
+```
 
-    delete old build files (ADD USER CONFIRMATION)
-    ```
-    sudo rm -rf /var/www/html/assets
-    sudo rm /var/www/html/index.html
-    ```
+delete old build files (ADD USER CONFIRMATION)
+```
+sudo rm -rf /var/www/html/assets
+sudo rm /var/www/html/index.html
+```
 
-    move build files
-    ```
-    sudo mv ~/db/ui/dist/assets /var/www/html
-    sudo mv ~/db/ui/dist/index.html /var/www/html
-    ```
+move build files
+```
+sudo mv ~/db/ui/dist/assets /var/www/html
+sudo mv ~/db/ui/dist/index.html /var/www/html
+```
+END OF COMMANDS IN `build_ui.sh`
+
 
 start services:
+NTS: MOVE CHMODS TO `setup_ec2.sh`; WRAP BOTH SERVICES IN `start_services.sh` OR SMTH
 celery.service and test.service should now be runnable with:
 ```
 sudo chmod +x /home/ubuntu/db/util/start_server.sh
@@ -152,7 +160,7 @@ grep 'PUBLIC_IP' ~/db/.env
 ```
 
 
-destroy current deployment (from `cdk-cli/cli`):
+destroy current deployment (from local machine, in `cdk-cli/cli`):
 ```
 node cdk_cli.js destroy
 ```
