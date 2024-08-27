@@ -69,19 +69,13 @@ cd ~/db && pipenv shell
 
 get global-bundle.pem for docdb
 ```
-wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+cd ~ && wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 ```
 
 
 setup postgres
 ```
 bash ~/db/setup_scripts/setup_postgres.sh
-```
-
-
-Now DBs should be connected. Optionally test DocDB with:
-```
-python ~/db/util/list_mongo.py
 ```
 
 
@@ -101,9 +95,15 @@ sudo chmod +x /home/ubuntu/db/util/start_celery.sh
 sudo systemctl start celery.service
 ```
 
+copy `~/db/nginx/default` to `/etc/nginx/sites-enabled` and 
+copy `~/db/nginx/nginx.conf` to `/etc/nginx`
+```
+sudo cp ~db/nginx/default /etc/nginx/sites-enabled &&
+sudo cp ~/db/nginx/nginx.conf /etc/nginx &&
+sudo systemctl reload nginx
+```
 
-copy `~db/nginx/default` to `/etc/nginx/sites-enabled`
-copy `~db/nginx/nginx.conf` to `/etc/nginx`
+
 
 try testing with postman...
 "works" but invalid API key (more bugs probably behind this error)
@@ -132,6 +132,23 @@ install vite
 ```
 npm install vite --save-dev
 ```
+
+
+build front end
+```
+cd ~/db/ui && npm run build
+```
+
+move build files
+```
+sudo mv ~/db/ui/dist/assets /var/www/html
+sudo mv ~/db/ui/dist/index.html /var/www/html
+```
+
+visit IP address in browser
+
+ISSUES WITH SQS-EC2 PERMISSIONS, CHANGED IAM IN STACK AND REDEPLOYING
+
 
 ...
 
