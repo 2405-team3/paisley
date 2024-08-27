@@ -80,7 +80,7 @@ verify install
 node -v && npm -v
 ```
 
-install vite
+install vite (this could probably be replaced with `npm install` from `~/db/ui`)
 ```
 cd ~/db/ui && npm install vite --save-dev
 ```
