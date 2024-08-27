@@ -27,9 +27,8 @@ cd cli && npm install -g .
 ```
 
 
-use CLI to set env variables and deploy your AWS infra
+use CLI to set env variables and deploy your AWS infra (from `cli` dir)
 ```
-cd cli
 paisley env
 paisley deploy
 ```
