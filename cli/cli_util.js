@@ -164,13 +164,18 @@ export async function copyEnv() {
   })
 }
 
-export async function deployCDK() {
+export async function deployCDK(cmdObj) {
   // deploy CDK
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   const cdkAppPath = path.resolve(__dirname, '../cdk/ec23');
 
-  const deployProcess = spawn('cdk', ['deploy'], { cwd: cdkAppPath, stdio: 'inherit' });
+  let cdkCommand = ['deploy']
+  if (cmdObj.verbose) {
+    cdkCommand.push('--verbose')
+  }
+
+  const deployProcess = spawn('cdk', cdkCommand, { cwd: cdkAppPath, stdio: 'inherit' });
 
   deployProcess.on('exit', async (code) => {
     if (code !== 0) {
@@ -182,12 +187,17 @@ export async function deployCDK() {
   });
 }
 
-export async function destroyCDK() {
+export async function destroyCDK(cmdObj) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   const cdkAppPath = path.resolve(__dirname, '../cdk/ec23');
 
-  const destroyProcess = spawn('cdk', ['destroy'], { cwd: cdkAppPath, stdio: 'inherit' });
+  let cdkCommand = ['destroy']
+  if (cmdObj.verbose) {
+    cdkCommand.push('--verbose')
+  }
+
+  const destroyProcess = spawn('cdk', cdkCommand, { cwd: cdkAppPath, stdio: 'inherit' });
 
   destroyProcess.on('exit', async (code) => {
     if (code !== 0) {

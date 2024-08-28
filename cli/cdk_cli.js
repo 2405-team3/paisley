@@ -28,6 +28,7 @@ program
 
 program
   .command('destroy')
+  .option('-v, --verbose', 'Run cdk destroy --verbose')
   .description('Destroys Paisley AWS infrastructure')
   .action(destroyCDK)
 

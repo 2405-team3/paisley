@@ -212,5 +212,7 @@ export class Ec23Stack extends cdk.Stack {
         }
       }
     }));
+
+    bucket.node.addDependency(s3GatewayEndpoint);
   }
 }

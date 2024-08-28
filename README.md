@@ -14,6 +14,13 @@ aws configure
 ```
 
 Clone the CDK stack and Paisley's CLI
+
+CURRENT TESTING:
+```
+git clone -b fix/second-pass https://github.com/paisley-rag/cdk-cli
+```
+
+ONCE CHANGES ARE MERGED INTO MAIN:
 ```
 git clone https://github.com/paisley-rag/cdk-cli
 ```
@@ -73,7 +80,7 @@ Install `nvm`
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
 ```
 
-Restart terminal. SSH back into your EC2 using `paisley ssh`.
+Restart terminal. SSH back into your EC2 using `paisley ssh` from the `cdk-cli/cli` directory.
 
 
 Download and install Node.js
@@ -108,7 +115,7 @@ Start Celery's task queue
 sudo systemctl start celery.service
 ```
 
-To test that either service is running, use `sudo systemctl status test.service` or `sudo systemctl status celery.service`.
+To test that either service is running, use `sudo systemctl status test.service` or `sudo systemctl status celery.service` (press `q` to exit).
 
 To stop either service, use `sudo systemctl stop test.service` or `sudo systemctl stop celery.service`.
 
