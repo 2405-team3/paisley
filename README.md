@@ -91,7 +91,7 @@ Install vite
 cd ~/db/ui && npm install vite --save-dev
 ```
 
-Builds the UI, deletes the old build if it exists, and replaces with new build.
+Build the UI and transfer the built files
 ```
 bash ~/db/setup_scripts/build_ui.sh
 ```
@@ -115,7 +115,7 @@ To stop either service, use `sudo systemctl stop test.service` or `sudo systemct
 
 ## Admin - View the Dashboard
 
-Visit the EC2's public IP address in your browser. If you need a reminder, use:
+Visit the EC2's public IP address in your browser. If you need a reminder of the IP, use:
 ```
 grep 'PUBLIC_IP' ~/db/.env
 ```

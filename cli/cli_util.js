@@ -69,7 +69,7 @@ async function writeToEnv(content) {
   const __dirname = dirname(__filename);
   const envFilePath = path.resolve(__dirname, '../.env')
   console.log('writeToEnv WITH ENV PATH:', envFilePath)
-  dotenv.config({ path: envFilePath });
+  dotenv.config({ path: envFilePath, override: true });
 
   if (fs.existsSync(envFilePath)) {
     fs.appendFileSync(envFilePath, `\n${content.trim()}`);
@@ -133,17 +133,19 @@ export async function copyEnv() {
   const __dirname = dirname(__filename);
   const envFilePath = path.resolve(__dirname, '../.env')
   console.log('COPY ENV WITH ENV PATH:', envFilePath)
-  dotenv.config({ path: envFilePath });
+  dotenv.config({ path: envFilePath, override: true });
 
   if (!process.env.PUBLIC_IP) {
     console.error('PUBLIC_IP environment variable is not set.');
     process.exit(1);
   }
-
+  console.log('PUBLIC_IP:', process.env.PUBLIC_IP)
+  
   if (!process.env.AWS_PEM_PATH) {
     console.error('AWS_PEM_PATH environment variable is not set. Please run \'env\' first.');
     process.exit(1);
   }
+  console.log('AWS_PEM_PATH:', process.env.AWS_PEM_PATH)
 
   const scpCommand = `scp -ri ${process.env.AWS_PEM_PATH} ${envFilePath} ubuntu@${process.env.PUBLIC_IP}:~/db/.env`;
 
@@ -203,17 +205,19 @@ export async function ssh() {
   const __dirname = dirname(__filename);
   const envFilePath = path.resolve(__dirname, '../.env')
   console.log('SSH WITH ENV PATH:', envFilePath)
-  dotenv.config({ path: envFilePath });
+  dotenv.config({ path: envFilePath, override: true });
 
   if (!process.env.PUBLIC_IP) {
     console.error('PUBLIC_IP environment variable is not set.');
     process.exit(1);
   }
+  console.log('PUBLIC_IP:', process.env.PUBLIC_IP)
 
   if (!process.env.AWS_PEM_PATH) {
     console.error('AWS_PEM_PATH environment variable is not set. Please run \'env\' first.');
     process.exit(1);
   }
+  console.log('AWS_PEM_PATH:', process.env.AWS_PEM_PATH)
 
   const sshCommand = `ssh -i ${process.env.AWS_PEM_PATH} ubuntu@${process.env.PUBLIC_IP}`;
 

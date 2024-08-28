@@ -11,8 +11,9 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as docdb from 'aws-cdk-lib/aws-docdb';
 import * as rds from 'aws-cdk-lib/aws-rds';
+import * as s3 from 'aws-cdk-lib/aws-s3';
 
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../../.env'), override: true });
 
 // type AwsEnvStackProps = cdk.StackProps & {
 //   config: Readonly<ConfigProps>;
@@ -56,7 +57,8 @@ export class Ec23Stack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
-        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSQSFullAccess')
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSQSFullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'),
       ],
     });
 
@@ -131,10 +133,10 @@ export class Ec23Stack extends cdk.Stack {
       // 'chmod +x /home/ubuntu/db/setup_scripts/cdk_finish.sh >> /home/ubuntu/setup.log 2>&1',
       // '/home/ubuntu/db/setup_scripts/cdk_finish.sh >> /home/ubuntu/setup.log 2>&1',
 
-      
-      `echo -e "\n\n\n ----- TRYING PIPENV INSTALL AGAIN ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'export PYTHONPATH=$(pipenv --venv)/bin >> /home/ubuntu/setup.log 2>&1',
-      'pipenv install --verbose >> /home/ubuntu/setup.log 2>&1',
+      // also didn't work; no pymongo?
+      // `echo -e "\n\n\n ----- TRYING PIPENV INSTALL AGAIN ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
+      // 'export PYTHONPATH=$(pipenv --venv)/bin >> /home/ubuntu/setup.log 2>&1',
+      // 'pipenv install --verbose >> /home/ubuntu/setup.log 2>&1',
 
       `echo -e "\n\n\n ----- EC2 USER DATA COMMANDS COMPLETED, PLEASE RUN PIPENV INSTALL IN EC2 ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
     )
@@ -239,6 +241,36 @@ export class Ec23Stack extends cdk.Stack {
 
     new cdk.CfnOutput(this, 'RDSInstanceEndpoint', {
       value: rdsInstance.instanceEndpoint.hostname,
+    });
+
+    // s3
+    const s3Bucket = new s3.Bucket(this, 'MyS3Bucket', {
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
+    const s3VpcEndpoint = new ec2.InterfaceVpcEndpoint(this, 'S3VpcEndpoint', {
+      vpc,
+      service: ec2.InterfaceVpcEndpointAwsService.S3,
+      subnets: {
+        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+      },
+      securityGroups: [new ec2.SecurityGroup(this, 'S3VpcEndpointSG', { vpc })],
+    });
+
+    s3Bucket.addToResourcePolicy(new iam.PolicyStatement({
+      actions: ['s3:*'],
+      resources: [s3Bucket.bucketArn, `${s3Bucket.bucketArn}/*`],
+      principals: [new iam.AnyPrincipal()],
+      conditions: {
+        StringEquals: {
+          'aws:SourceVpce': s3VpcEndpoint.vpcEndpointId,
+        },
+      },
+    }));
+
+    new cdk.CfnOutput(this, 'S3BucketName', {
+      value: s3Bucket.bucketName,
     });
   }
 }

@@ -1,8 +1,12 @@
 #!/bin/bash
 
+# script dir
+SCRIPT_DIR=$(dirname "$0")
+ENV_DIR="$SCRIPT_DIR/../.env"
+
 # Source the .env file to load existing environment variables, ignoring comments and empty lines
-if [ -f ../.env ]; then
-  export $(grep -v '^#' ../.env | xargs)
+if [ -f "$ENV_DIR" ]; then
+  export $(grep -v '^#' "$ENV_DIR" | xargs)
 fi
 
 # Run the AWS CLI command and store the output in a variable
@@ -13,7 +17,7 @@ INSTANCE_PUBLIC_IP=$(aws cloudformation describe-stacks --stack-name Ec23Stack -
 MONGO_URI="mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${DOCUMENT_DB_ENDPOINT}:27017/?tls=true&tlsCAFile=global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
 
 # Write the output to the .env file
-echo -e "\n" >> ../.env
-echo "PG_HOST=$RDS_INSTANCE_ENDPOINT" >> ../.env
-echo "MONGO_URI=$MONGO_URI" >> ../.env
-echo "PUBLIC_IP=$INSTANCE_PUBLIC_IP" >> ../.env
+echo -e "\n" >> "$ENV_DIR"
+echo "PG_HOST=$RDS_INSTANCE_ENDPOINT" >> "$ENV_DIR"
+echo "MONGO_URI=$MONGO_URI" >> "$ENV_DIR"
+echo "PUBLIC_IP=$INSTANCE_PUBLIC_IP" >> "$ENV_DIR"
