@@ -13,6 +13,9 @@ import * as docdb from 'aws-cdk-lib/aws-docdb';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 
+import { userDataCommands } from './user-data-commands';
+
+
 dotenv.config({ path: path.resolve(__dirname, '../../../.env'), override: true });
 
 // type AwsEnvStackProps = cdk.StackProps & {
@@ -71,75 +74,8 @@ export class Ec23Stack extends cdk.Stack {
     // Start-up actions (application code)
     const userData = ec2.UserData.forLinux();
 
-    userData.addCommands(
-      `echo -e "\n\n\n ----- SUDO APT UPDATE ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'sudo apt update -y > /home/ubuntu/setup.log 2>&1',
 
-
-      `echo -e "\n\n\n ----- SUDO APT UPGRADE ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'sudo apt upgrade -y >> /home/ubuntu/setup.log 2>&1',
-
-
-      `echo -e "\n\n\n ----- INSTALL NGINX ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'DEBIAN_FRONTEND=noninteractive sudo apt -y install nginx >> /home/ubuntu/setup.log 2>&1',
-      
-      
-      `echo -e "\n\n\n ----- INSTALL PYTHON3.10 ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'DEBIAN_FRONTEND=noninteractive sudo apt install -y python3.10 python3-pip -y >> /home/ubuntu/setup.log 2>&1',
-      
-
-      `echo -e "\n\n\n ----- GIT CLONE ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      // 'git clone https://github.com/paisley-rag/db /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
-      'git clone -b fix/cdk2 https://github.com/paisley-rag/db /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
-      'while [ ! -d /home/ubuntu/db ]; do sleep 1; done', // Check if the directory /home/ubuntu/db exists before running the next commands
-
-
-      `echo -e "\n\n\n ----- CHMOD DB ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'sudo chmod -R a+rw /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
-      
-
-      `echo -e "\n\n\n ----- SUDO APT INSTALL PYTHON3-PIP ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'DEBIAN_FRONTEND=noninteractive sudo apt install -y python3-pip >> /home/ubuntu/setup.log 2>&1',
-      
-
-      `echo -e "\n\n\n ----- UPGRADING PIP ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'pip install --upgrade pip >> /home/ubuntu/setup.log 2>&1', // Upgrade pip
-
-
-      `echo -e "\n\n\n ----- PIP INSTALL PIPENV ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'DEBIAN_FRONTEND=noninteractive pip install pipenv >> /home/ubuntu/setup.log 2>&1',
-      
-
-      `echo -e "\n\n\n ----- PIPENV --PYTHON ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'DEBIAN_FRONTEND=noninteractive pipenv --python /usr/bin/python3 >> /home/ubuntu/setup.log 2>&1',
-      
-
-      `echo -e "\n\n\n ----- SETTING ENVIRONMENT VARIABLES ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'echo "export PIPENV_PATH=$(which pipenv)" >> /home/ubuntu/.profile',
-      'echo "export PIPENV_PIPFILE=/home/ubuntu/db/Pipfile" >> /home/ubuntu/.profile',
-      'source ~/.profile',
-
-      // can't get this to work for some reason; pipenv install runs but dependencies aren't
-      // available unless pipenv install is run again manually after ssh'ing. 
-      // going to try to push this logic to 'cdk_finish.sh' and see what happens.
-      // `echo -e "\n\n\n ----- PIPENV INSTALL ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      // 'cd /home/ubuntu/db',
-      // '$(which pipenv) install --verbose >> /home/ubuntu/setup.log 2>&1',
-      
-
-
-      // also didn't work; leaving `pipenv install` as manual step for user
-      // `echo -e "\n\n\n ----- CHMOD AND RUN CDK_FINISH.SH ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      // 'chmod +x /home/ubuntu/db/setup_scripts/cdk_finish.sh >> /home/ubuntu/setup.log 2>&1',
-      // '/home/ubuntu/db/setup_scripts/cdk_finish.sh >> /home/ubuntu/setup.log 2>&1',
-
-      // also didn't work; no pymongo?
-      // `echo -e "\n\n\n ----- TRYING PIPENV INSTALL AGAIN ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      // 'export PYTHONPATH=$(pipenv --venv)/bin >> /home/ubuntu/setup.log 2>&1',
-      // 'pipenv install --verbose >> /home/ubuntu/setup.log 2>&1',
-
-      `echo -e "\n\n\n ----- EC2 USER DATA COMMANDS COMPLETED, PLEASE RUN PIPENV INSTALL IN EC2 ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-    )
+    userData.addCommands(...userDataCommands)
 
     const keyPair = ec2.KeyPair.fromKeyPairAttributes(this, 'KeyPair', {
       keyPairName: process.env.AWS_KEY_PAIR_NAME || '',
@@ -244,33 +180,37 @@ export class Ec23Stack extends cdk.Stack {
     });
 
     // s3
-    const s3Bucket = new s3.Bucket(this, 'MyS3Bucket', {
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
+
+    // Add a Gateway VPC Endpoint for S3
+    const s3GatewayEndpoint = vpc.addGatewayEndpoint('S3GatewayEndpoint', {
+      service: ec2.GatewayVpcEndpointAwsService.S3,
     });
 
-    const s3VpcEndpoint = new ec2.InterfaceVpcEndpoint(this, 'S3VpcEndpoint', {
+    const s3Endpoint = new ec2.InterfaceVpcEndpoint(this, 'S3Endpoint', {
       vpc,
       service: ec2.InterfaceVpcEndpointAwsService.S3,
-      subnets: {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-      },
-      securityGroups: [new ec2.SecurityGroup(this, 'S3VpcEndpointSG', { vpc })],
     });
 
-    s3Bucket.addToResourcePolicy(new iam.PolicyStatement({
-      actions: ['s3:*'],
-      resources: [s3Bucket.bucketArn, `${s3Bucket.bucketArn}/*`],
-      principals: [new iam.AnyPrincipal()],
-      conditions: {
-        StringEquals: {
-          'aws:SourceVpce': s3VpcEndpoint.vpcEndpointId,
-        },
-      },
-    }));
+    const bucket = new s3.Bucket(this, `CDKS3Bucket-${INSTANCE_NUM}`, {
+      versioned: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // Deletes S3 along with stack
+      autoDeleteObjects: true, // Deletes S3 contents along with self
+    });
 
     new cdk.CfnOutput(this, 'S3BucketName', {
-      value: s3Bucket.bucketName,
+      value: bucket.bucketName,
     });
+
+    // Restrict access to VPC
+    bucket.addToResourcePolicy(new iam.PolicyStatement({
+      actions: ['s3:*'],
+      resources: [bucket.bucketArn, `${bucket.bucketArn}/*`],
+      principals: [new iam.ArnPrincipal('*')], // Consider specifying specific IAM roles or users
+      conditions: {
+        StringEquals: {
+          'aws:SourceVpce': s3Endpoint.vpcEndpointId
+        }
+      }
+    }));
   }
 }
