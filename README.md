@@ -1,75 +1,82 @@
-# paisley
+# Paisley
 
-The following is simply a list of steps that have worked so far, if you see any redundancies let's address them before pushing as much of this to scripts/CLI as possible
+Paisley is an open-source framework to help IT or engineering teams quickly set up and deploy chatbots that integrate their data. It achieves this through Retrieval-Augmented Generation (RAG).
 
+Our RAG “starter-kit” enables teams to skip some of the research, easily establish knowledge bases, and more quickly deploy and iterate on RAG chatbots.
 
-install aws-cdk and configure if not already done
+The following steps will show you how to get started deploying Paisley on your own AWS infrastructure. You will need AWS credentials, Node.js, and npm.
+
+## Setup
+Install and configure AWS CDK
 ```
 npm install -g aws-cdk
 aws configure
 ```
 
-clone cdk & cli
+Clone the CDK stack and Paisley's CLI
 ```
 git clone https://github.com/paisley-rag/cdk-cli
 ```
 
-
-npm install
+Install dependencies
 ```
 cd cdk-cli
 npm install --prefix cdk cli cdk/ec23
 ```
 
-install paisley package globally
+Globally install Paisley CLI package
 ```
 cd cli && npm install -g .
 ```
 
 
-use CLI to set env variables and deploy your AWS infra (from `cli` dir)
+Set your environment variables to store in a generated `.env` file
 ```
 paisley env
+```
+
+## Deployment
+Deploy the Paisley CDK stack on your AWS infrastructure (keep note of endpoints and IPs printed after deployment)
+```
 paisley deploy
 ```
-keep note of endpoints and IPs printed after deployment
 
-copy env file to EC2
+
+Copy generated `.env` file to your new EC2 instance
 ```
 paisley copy-env
 ```
 
-ssh into EC2
+SSH into your EC2
 ```
 paisley ssh
 ```
+You should now be connected to your EC2 in the terminal.
 
 
-From within new EC2:
-
-install pipenv dependencies and start shell
+Install pipenv dependencies and start shell
 ```
 cd ~/db && pipenv install --verbose && pipenv shell 
 ```
 
-run setup_ec2.sh
+Finish provisioning the EC2
 ```
 bash ~/db/setup_scripts/setup_ec2.sh
 ```
 
+## Admin - Building the UI
 
-BUILD UI (involves installing `nvm` and `vite`)
-install nvm
+Building the UI requires `nvm` and `vite`.
+
+Install `nvm`
 ```
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
 ```
 
-restart terminal and ssh back into EC2
-```
-paisley ssh
-```
+Restart terminal. SSH back into your EC2 using `paisley ssh`.
 
-download and install Node.js
+
+Download and install Node.js
 ```
 nvm install 20
 ```
@@ -79,42 +86,45 @@ verify install
 node -v && npm -v
 ```
 
-install vite (this could probably be replaced with `npm install` from `~/db/ui`)
+Install vite
 ```
 cd ~/db/ui && npm install vite --save-dev
 ```
 
-run build_ui.sh
+Builds the UI, deletes the old build if it exists, and replaces with new build.
 ```
 bash ~/db/setup_scripts/build_ui.sh
 ```
 
-start services:
-celery.service and test.service should now be runnable with:
+## Admin - Starting the Server
+
+Start the backend server
 ```
 sudo systemctl start test.service
 ```
+
+Start Celery's task queue
 ```
 sudo systemctl start celery.service
 ```
 
-test services are running (type `q` to exit):
-```
-sudo systemctl status test.service
-```
-```
-sudo systemctl status celery.service
-```
+To test that either service is running, use `sudo systemctl status test.service` or `sudo systemctl status celery.service`.
+
+To stop either service, use `sudo systemctl stop test.service` or `sudo systemctl stop celery.service`.
 
 
-visit IP address in browser
-to see public ip:
+## Admin - View the Dashboard
+
+Visit the EC2's public IP address in your browser. If you need a reminder, use:
 ```
 grep 'PUBLIC_IP' ~/db/.env
 ```
+from within your EC2.
 
 
-destroy current deployment (from local machine, in `cdk-cli/cli`):
+## Admin - Teardown
+
+From `/cdk-cli/cli` on your local machine, use:
 ```
 paisley destroy
 ```

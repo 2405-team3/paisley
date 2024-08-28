@@ -19,6 +19,11 @@ const ENV_VARIABLES = [
   },
   {
     type: 'input',
+    name: 'AWS_IDENTIFIER',
+    message: 'Enter an identifier to be included in deployed AWS infrastructure:',
+  },
+  {
+    type: 'input',
     name: 'PG_DATABASE',
     message: 'Select a database name for your PostgreSQL RDS:',
   },
@@ -62,7 +67,10 @@ const ENV_VARIABLES = [
 async function writeToEnv(content) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
-  const envFilePath = path.resolve(__dirname, '../.env');
+  const envFilePath = path.resolve(__dirname, '../.env')
+  console.log('writeToEnv WITH ENV PATH:', envFilePath)
+  dotenv.config({ path: envFilePath });
+
   if (fs.existsSync(envFilePath)) {
     fs.appendFileSync(envFilePath, `\n${content.trim()}`);
   } else {
@@ -77,6 +85,7 @@ export async function setEnv() {
   const content = 
     `OPENAI_API_KEY=${userVariables.OPENAI_API_KEY}\n` +
     `LLAMA_CLOUD_API_KEY=${userVariables.LLAMA_CLOUD_API_KEY}\n` +
+    `AWS_IDENTIFIER=${userVariables.AWS_IDENTIFIER}\n` +
     `PG_ADMINPW=${userVariables.PG_ADMINPW}\n` +
     `PG_DATABASE=${userVariables.PG_DATABASE}\n` +
     `PG_USER=${userVariables.PG_USER}\n` +
@@ -103,6 +112,7 @@ async function updateEnv() {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   const updateEnvScriptPath = path.resolve(__dirname, 'update_env.sh');
+  console.log('UPDATE ENV SCRIPT PATH:', updateEnvScriptPath)
   const updateEnvProcess = spawn('bash', [updateEnvScriptPath], { stdio: 'inherit' });
 
   return new Promise((resolve, reject) => {
@@ -116,6 +126,40 @@ async function updateEnv() {
       }
     });
   });
+}
+
+export async function copyEnv() {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const envFilePath = path.resolve(__dirname, '../.env')
+  console.log('COPY ENV WITH ENV PATH:', envFilePath)
+  dotenv.config({ path: envFilePath });
+
+  if (!process.env.PUBLIC_IP) {
+    console.error('PUBLIC_IP environment variable is not set.');
+    process.exit(1);
+  }
+
+  if (!process.env.AWS_PEM_PATH) {
+    console.error('AWS_PEM_PATH environment variable is not set. Please run \'env\' first.');
+    process.exit(1);
+  }
+
+  const scpCommand = `scp -ri ${process.env.AWS_PEM_PATH} ${envFilePath} ubuntu@${process.env.PUBLIC_IP}:~/db/.env`;
+
+  const scpProcess = spawn('bash', ['-c', scpCommand], { stdio: 'inherit' });
+  
+  return new Promise((resolve, reject) => {
+    scpProcess.on('exit', (code) => {
+      if (code !== 0) {
+        console.error(`SCP command failed with code ${code}`);
+        reject(new Error(`update_env.sh script failed with code ${code}`));
+      } else {
+        console.log('SCP command executed successfully');
+        resolve();
+      }
+    });
+  })
 }
 
 export async function deployCDK() {
@@ -152,39 +196,14 @@ export async function destroyCDK() {
   });
 }
 
-export async function copyEnv() {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const envFilePath = path.resolve(__dirname, '../.env');
-  dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-  if (!process.env.PUBLIC_IP) {
-    console.error('PUBLIC_IP environment variable is not set.');
-    process.exit(1);
-  }
-
-  if (!process.env.AWS_PEM_PATH) {
-    console.error('AWS_PEM_PATH environment variable is not set. Please run \'env\' first.');
-    process.exit(1);
-  }
-
-  const scpCommand = `scp -ri ${process.env.AWS_PEM_PATH} ${envFilePath} ubuntu@${process.env.PUBLIC_IP}:~/db/.env`;
-
-  const scpProcess = spawn('bash', ['-c', scpCommand], { stdio: 'inherit' });
-
-  scpProcess.on('exit', (code) => {
-    if (code !== 0) {
-      console.error(`SCP command failed with code ${code}`);
-    } else {
-      console.log('SCP command executed successfully');
-    }
-  });
-}
 
 export async function ssh() {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
-  dotenv.config({ path: path.resolve(__dirname, '../.env') });
+  const envFilePath = path.resolve(__dirname, '../.env')
+  console.log('SSH WITH ENV PATH:', envFilePath)
+  dotenv.config({ path: envFilePath });
 
   if (!process.env.PUBLIC_IP) {
     console.error('PUBLIC_IP environment variable is not set.');

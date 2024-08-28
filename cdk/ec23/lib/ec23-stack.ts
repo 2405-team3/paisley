@@ -20,7 +20,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 type AwsEnvStackProps = cdk.StackProps
 
-const INSTANCE_NUM = "xBB25x";
+const INSTANCE_NUM = process.env.AWS_IDENTIFIER || 'PAISLEY'
 
 export class Ec23Stack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: AwsEnvStackProps) {
@@ -87,7 +87,8 @@ export class Ec23Stack extends cdk.Stack {
       
 
       `echo -e "\n\n\n ----- GIT CLONE ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'git clone https://github.com/paisley-rag/db /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
+      // 'git clone https://github.com/paisley-rag/db /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
+      'git clone -b fix/cdk2 https://github.com/paisley-rag/db /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
       'while [ ! -d /home/ubuntu/db ]; do sleep 1; done', // Check if the directory /home/ubuntu/db exists before running the next commands
 
 
@@ -123,10 +124,17 @@ export class Ec23Stack extends cdk.Stack {
       // 'cd /home/ubuntu/db',
       // '$(which pipenv) install --verbose >> /home/ubuntu/setup.log 2>&1',
       
+
+
       // also didn't work; leaving `pipenv install` as manual step for user
       // `echo -e "\n\n\n ----- CHMOD AND RUN CDK_FINISH.SH ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
       // 'chmod +x /home/ubuntu/db/setup_scripts/cdk_finish.sh >> /home/ubuntu/setup.log 2>&1',
       // '/home/ubuntu/db/setup_scripts/cdk_finish.sh >> /home/ubuntu/setup.log 2>&1',
+
+      
+      `echo -e "\n\n\n ----- TRYING PIPENV INSTALL AGAIN ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
+      'export PYTHONPATH=$(pipenv --venv)/bin >> /home/ubuntu/setup.log 2>&1',
+      'pipenv install --verbose >> /home/ubuntu/setup.log 2>&1',
 
       `echo -e "\n\n\n ----- EC2 USER DATA COMMANDS COMPLETED, PLEASE RUN PIPENV INSTALL IN EC2 ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
     )
