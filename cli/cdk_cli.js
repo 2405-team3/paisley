@@ -23,6 +23,7 @@ program
 
 program
   .command('deploy')
+  .option('-v, --verbose', 'Run cdk deploy --verbose')
   .description('Builds, synthesizes, and deploys Paisley on AWS')
   .action(deployCDK)
 

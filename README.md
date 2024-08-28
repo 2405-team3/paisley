@@ -30,6 +30,11 @@ Install dependencies
 cd cdk-cli
 npm install --prefix cdk cli cdk/ec23
 ```
+IF GIT ISSUES (???)
+```
+npm install --prefix cdk && npm install --prefix cli && npm install --prefix cdk/ec23
+```
+
 
 Globally install Paisley CLI package
 ```
