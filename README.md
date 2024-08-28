@@ -14,13 +14,6 @@ aws configure
 ```
 
 Clone the CDK stack and Paisley's CLI
-
-CURRENT TESTING:
-```
-git clone -b fix/second-pass https://github.com/paisley-rag/cdk-cli
-```
-
-ONCE CHANGES ARE MERGED INTO MAIN:
 ```
 git clone https://github.com/paisley-rag/cdk-cli
 ```

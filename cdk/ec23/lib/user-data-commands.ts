@@ -16,8 +16,8 @@ export const userDataCommands = [
   
 
   `echo -e "\n\n\n ----- GIT CLONE ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-  // 'git clone https://github.com/paisley-rag/db /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
-  'git clone -b fix/cdk2 https://github.com/paisley-rag/db /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
+  'git clone https://github.com/paisley-rag/db /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
+  // 'git clone -b fix/cdk2 https://github.com/paisley-rag/db /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
   'while [ ! -d /home/ubuntu/db ]; do sleep 1; done', // Check if the directory /home/ubuntu/db exists before running the next commands
 
 
