@@ -4,71 +4,35 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { spawn } from 'child_process';
+import ENV_VARIABLES from './env_variable_prompts.js';
 import dotenv from 'dotenv';
 
-const ENV_VARIABLES = [
-  {
-    type: 'input',
-    name: 'OPENAI_API_KEY',
-    message: 'Enter your OPENAI API key:',
-  },
-  {
-    type: 'input',
-    name: 'LLAMA_CLOUD_API_KEY',
-    message: 'Enter your LLAMA Cloud API key:',
-  },
-  {
-    type: 'input',
-    name: 'AWS_IDENTIFIER',
-    message: 'Enter an identifier to be included in deployed AWS infrastructure:',
-  },
-  {
-    type: 'input',
-    name: 'PG_DATABASE',
-    message: 'Select a database name for your PostgreSQL RDS:',
-  },
-  {
-    type: 'input',
-    name: 'PG_ADMINPW',
-    message: 'Select an admin password for your PostgreSQL RDS:',
-  },
-  {
-    type: 'input',
-    name: 'PG_USER',
-    message: 'Select a username for your PostgreSQL RDS:',
-  },
-  {
-    type: 'input',
-    name: 'PG_PASSWORD',
-    message: 'Select a password for your PostgreSQL RDS:',
-  },
-  {
-    type: 'input',
-    name: 'MONGO_USERNAME',
-    message: 'Select a username for your MongoDB DocDB:',
-  },
-  {
-    type: 'input',
-    name: 'MONGO_PASSWORD',
-    message: 'Select a password for your MongoDB Password:',
-  },
-  {
-    type: 'input',
-    name: 'AWS_KEY_PAIR_NAME',
-    message: 'Select the name of the AWS key pair you will use:',
-  },
-  {
-    type: 'input',
-    name: 'AWS_PEM_PATH',
-    message: 'Enter the path to your AWS pem key file:',
-  },
-];
-
-async function writeToEnv(content) {
+function pathFromCurrentDir(relativePath) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
-  const envFilePath = path.resolve(__dirname, '../.env')
-  console.log('writeToEnv WITH ENV PATH:', envFilePath)
+  return path.resolve(__dirname, relativePath)
+}
+
+function envPath() {
+  return pathFromCurrentDir('../.env')
+}
+
+function checkIPandPemPath() {
+  if (!process.env.PUBLIC_IP) {
+    console.error('PUBLIC_IP environment variable is not set.');
+    process.exit(1);
+  }
+  console.log('PUBLIC_IP:', process.env.PUBLIC_IP)
+  
+  if (!process.env.AWS_PEM_PATH) {
+    console.error('AWS_PEM_PATH environment variable is not set. Please run \'env\' first.');
+    process.exit(1);
+  }
+  console.log('AWS_PEM_PATH:', process.env.AWS_PEM_PATH)
+}
+
+async function writeToEnv(content) {
+  const envFilePath = envPath();
   dotenv.config({ path: envFilePath, override: true });
 
   if (fs.existsSync(envFilePath)) {
@@ -79,23 +43,40 @@ async function writeToEnv(content) {
   console.log('.env file created and environment variables set.');
 }
 
+async function overWriteExistingEnv() {
+  const envFilePath = envPath();
+  if (fs.existsSync(envFilePath)) {
+    const { overwrite } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'overwrite',
+        message: '.env file already exists. Do you want to overwrite it?',
+        default: false,
+      },
+    ]);
+
+    if (!overwrite) {
+      console.log('Operation cancelled by the user.');
+      return;
+    } else {
+      fs.writeFileSync(envFilePath, '');
+    }
+  }
+}
+
 export async function setEnv() {
+  await overWriteExistingEnv()
+  
+  // prompt for new variables
   let userVariables = await inquirer.prompt(ENV_VARIABLES);
-  /// Create .env file content
-  const content = 
-    `OPENAI_API_KEY=${userVariables.OPENAI_API_KEY}\n` +
-    `LLAMA_CLOUD_API_KEY=${userVariables.LLAMA_CLOUD_API_KEY}\n` +
-    `AWS_IDENTIFIER=${userVariables.AWS_IDENTIFIER}\n` +
-    `PG_ADMINPW=${userVariables.PG_ADMINPW}\n` +
-    `PG_DATABASE=${userVariables.PG_DATABASE}\n` +
-    `PG_USER=${userVariables.PG_USER}\n` +
-    `PG_PASSWORD=${userVariables.PG_PASSWORD}\n` +
+  console.log('USER VARIABLES:', userVariables)
+  userVariables = Object.entries(userVariables).map(([key, value]) => `${key}=${value}`)
+
+  // append non-user variables
+  const allVariables = 
+    userVariables.join('\n') + '\n' +
     `PG_ADMIN=postgres\n` +
     `PG_PORT=5432\n` +
-    `MONGO_USERNAME=${userVariables.MONGO_USERNAME}\n` +
-    `MONGO_PASSWORD=${userVariables.MONGO_PASSWORD}\n` +
-    `AWS_KEY_PAIR_NAME=${userVariables.AWS_KEY_PAIR_NAME}\n` +
-    `AWS_PEM_PATH=${userVariables.AWS_PEM_PATH}\n` +
     `DOCDB_NAME=simple\n` +
     `DOCDB_COLLECTION=simple\n` +
     `CONFIG_DB=configs\n` +
@@ -104,19 +85,16 @@ export async function setEnv() {
     `CONFIG_API_COL=config_api\n` +
     `\n`;
 
-  writeToEnv(content)
+  writeToEnv(allVariables)
 }
 
 async function updateEnv() {
   // update .env with CDK-created values
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const updateEnvScriptPath = path.resolve(__dirname, 'update_env.sh');
-  console.log('UPDATE ENV SCRIPT PATH:', updateEnvScriptPath)
+  const updateEnvScriptPath = pathFromCurrentDir('update_env.sh');
   const updateEnvProcess = spawn('bash', [updateEnvScriptPath], { stdio: 'inherit' });
 
   return new Promise((resolve, reject) => {
-    updateEnvProcess.on('exit', (code) => {
+    updateEnvProcess.on('close', (code) => {
       if (code !== 0) {
         console.error(`update_env.sh script failed with code ${code}`);
         reject(new Error(`update_env.sh script failed with code ${code}`));
@@ -129,30 +107,17 @@ async function updateEnv() {
 }
 
 export async function copyEnv() {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const envFilePath = path.resolve(__dirname, '../.env')
-  console.log('COPY ENV WITH ENV PATH:', envFilePath)
+  const envFilePath = envPath();
   dotenv.config({ path: envFilePath, override: true });
 
-  if (!process.env.PUBLIC_IP) {
-    console.error('PUBLIC_IP environment variable is not set.');
-    process.exit(1);
-  }
-  console.log('PUBLIC_IP:', process.env.PUBLIC_IP)
-  
-  if (!process.env.AWS_PEM_PATH) {
-    console.error('AWS_PEM_PATH environment variable is not set. Please run \'env\' first.');
-    process.exit(1);
-  }
-  console.log('AWS_PEM_PATH:', process.env.AWS_PEM_PATH)
+  checkIPandPemPath()
 
   const scpCommand = `scp -ri ${process.env.AWS_PEM_PATH} ${envFilePath} ubuntu@${process.env.PUBLIC_IP}:~/db/.env`;
-
+  console.log('SCP COMMAND IN COPYENV IS:', scpCommand)
   const scpProcess = spawn('bash', ['-c', scpCommand], { stdio: 'inherit' });
   
   return new Promise((resolve, reject) => {
-    scpProcess.on('exit', (code) => {
+    scpProcess.on('close', (code) => {
       if (code !== 0) {
         console.error(`SCP command failed with code ${code}`);
         reject(new Error(`update_env.sh script failed with code ${code}`));
@@ -165,44 +130,55 @@ export async function copyEnv() {
 }
 
 export async function deployCDK(cmdObj) {
-  // deploy CDK
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const cdkAppPath = path.resolve(__dirname, '../cdk/paisley');
+  const cdkAppPath = pathFromCurrentDir('../cdk/paisley');
 
-  let cdkCommand = ['deploy']
-  if (cmdObj.verbose) {
-    cdkCommand.push('--verbose')
-  }
-
+  let cdkCommand = cmdObj.verbose ? ['deploy', '--verbose'] : ['deploy'];
   const deployProcess = spawn('cdk', cdkCommand, { cwd: cdkAppPath, stdio: 'inherit' });
 
   deployProcess.on('exit', async (code) => {
     if (code !== 0) {
       console.error(`CDK deployment failed with code ${code}`);
     } else {
-      console.log('CDK deployment succeeded');
       await updateEnv()
+      console.log('CDK deployment complete');
     }
   });
 }
 
-export async function destroyCDK(cmdObj) {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const cdkAppPath = path.resolve(__dirname, '../cdk/paisley');
+// Removes PG_HOST, MONGO_URI, S3_BUCKET_NAME, and PUBLIC_IP from .env after destroy
+async function cleanEnv() {
+  const envFilePath = envPath();
 
-  let cdkCommand = ['destroy']
-  if (cmdObj.verbose) {
-    cdkCommand.push('--verbose')
+  if (fs.existsSync(envFilePath)) {
+    let envContent = fs.readFileSync(envFilePath, 'utf-8');
+    const variablesToRemove = ['PG_HOST', 'MONGO_URI', 'S3_BUCKET_NAME', 'PUBLIC_IP'];
+
+    variablesToRemove.forEach(variable => {
+      const regex = new RegExp(`^${variable}=.*$`, 'gm');
+      envContent = envContent.replace(regex, '');
+    });
+
+    // Remove extra newlines
+    envContent = envContent.replace(/^\s*[\r\n]/gm, '');
+
+    fs.writeFileSync(envFilePath, envContent, 'utf-8');
+    console.log('Environment variables removed successfully');
+  } else {
+    console.error('.env file does not exist');
   }
+}
 
+export async function destroyCDK(cmdObj) {
+  const cdkAppPath = pathFromCurrentDir('../cdk/paisley');
+
+  let cdkCommand = cmdObj.verbose ? ['destroy', '--verbose'] : ['destroy'];
   const destroyProcess = spawn('cdk', cdkCommand, { cwd: cdkAppPath, stdio: 'inherit' });
 
   destroyProcess.on('exit', async (code) => {
     if (code !== 0) {
       console.error(`Failed to destroy CDK with code ${code}`);
     } else {
+      await cleanEnv()
       console.log('CDK successfully destroyed');
     }
   });
@@ -211,25 +187,11 @@ export async function destroyCDK(cmdObj) {
 
 
 export async function ssh() {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const envFilePath = path.resolve(__dirname, '../.env')
-  console.log('SSH WITH ENV PATH:', envFilePath)
+  const envFilePath = envPath();
   dotenv.config({ path: envFilePath, override: true });
 
-  if (!process.env.PUBLIC_IP) {
-    console.error('PUBLIC_IP environment variable is not set.');
-    process.exit(1);
-  }
-  console.log('PUBLIC_IP:', process.env.PUBLIC_IP)
-
-  if (!process.env.AWS_PEM_PATH) {
-    console.error('AWS_PEM_PATH environment variable is not set. Please run \'env\' first.');
-    process.exit(1);
-  }
-  console.log('AWS_PEM_PATH:', process.env.AWS_PEM_PATH)
+  checkIPandPemPath()
 
   const sshCommand = `ssh -i ${process.env.AWS_PEM_PATH} ubuntu@${process.env.PUBLIC_IP}`;
-
   const sshProcess = spawn('bash', ['-c', sshCommand], { stdio: 'inherit' });
 }
