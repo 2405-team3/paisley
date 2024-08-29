@@ -26,7 +26,7 @@ type AwsEnvStackProps = cdk.StackProps
 
 const INSTANCE_NUM = process.env.AWS_IDENTIFIER || 'PAISLEY'
 
-export class Ec23Stack extends cdk.Stack {
+export class PaisleyStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: AwsEnvStackProps) {
     super(scope, id, props);
 

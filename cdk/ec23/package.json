@@ -1,8 +1,8 @@
 {
-  "name": "ec23",
+  "name": "paisley",
   "version": "0.1.0",
   "bin": {
-    "ec23": "bin/ec23.js"
+    "paisley": "bin/paisley.js"
   },
   "scripts": {
     "build": "tsc",

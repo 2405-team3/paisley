@@ -168,7 +168,7 @@ export async function deployCDK(cmdObj) {
   // deploy CDK
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
-  const cdkAppPath = path.resolve(__dirname, '../cdk/ec23');
+  const cdkAppPath = path.resolve(__dirname, '../cdk/paisley');
 
   let cdkCommand = ['deploy']
   if (cmdObj.verbose) {
@@ -190,7 +190,7 @@ export async function deployCDK(cmdObj) {
 export async function destroyCDK(cmdObj) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
-  const cdkAppPath = path.resolve(__dirname, '../cdk/ec23');
+  const cdkAppPath = path.resolve(__dirname, '../cdk/paisley');
 
   let cdkCommand = ['destroy']
   if (cmdObj.verbose) {
