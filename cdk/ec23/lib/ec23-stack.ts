@@ -1,20 +1,30 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { ConfigProps } from "./config";
+// import { ConfigProps } from "./config";
 // import * as fs from 'fs'
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
+
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as docdb from 'aws-cdk-lib/aws-docdb';
 import * as rds from 'aws-cdk-lib/aws-rds';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+
+import { userDataCommands } from './user-data-commands';
 
 
-type AwsEnvStackProps = cdk.StackProps & {
-  config: Readonly<ConfigProps>;
-};
+dotenv.config({ path: path.resolve(__dirname, '../../../.env'), override: true });
 
-const INSTANCE_NUM = "xBB24x";
+// type AwsEnvStackProps = cdk.StackProps & {
+//   config: Readonly<ConfigProps>;
+// };
+
+type AwsEnvStackProps = cdk.StackProps
+
+const INSTANCE_NUM = process.env.AWS_IDENTIFIER || 'PAISLEY'
 
 export class Ec23Stack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: AwsEnvStackProps) {
@@ -50,6 +60,8 @@ export class Ec23Stack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSQSFullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'),
       ],
     });
 
@@ -62,67 +74,8 @@ export class Ec23Stack extends cdk.Stack {
     // Start-up actions (application code)
     const userData = ec2.UserData.forLinux();
 
-    userData.addCommands(
-      `echo -e "\n\n\n ----- SUDO APT UPDATE ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'sudo apt update -y > /home/ubuntu/setup.log 2>&1',
 
-
-      `echo -e "\n\n\n ----- SUDO APT UPGRADE ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'sudo apt upgrade -y >> /home/ubuntu/setup.log 2>&1',
-
-
-      `echo -e "\n\n\n ----- INSTALL NGINX ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'DEBIAN_FRONTEND=noninteractive sudo apt -y install nginx >> /home/ubuntu/setup.log 2>&1',
-      
-      
-      `echo -e "\n\n\n ----- INSTALL PYTHON3.10 ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'DEBIAN_FRONTEND=noninteractive sudo apt install -y python3.10 python3-pip -y >> /home/ubuntu/setup.log 2>&1',
-      
-
-      `echo -e "\n\n\n ----- GIT CLONE ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'git clone https://github.com/2405-team3/db.git /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
-      'while [ ! -d /home/ubuntu/db ]; do sleep 1; done', // Check if the directory /home/ubuntu/db exists before running the next commands
-
-
-      `echo -e "\n\n\n ----- CHMOD DB ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'sudo chmod -R a+rw /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
-      
-
-      `echo -e "\n\n\n ----- SUDO APT INSTALL PYTHON3-PIP ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'DEBIAN_FRONTEND=noninteractive sudo apt install -y python3-pip >> /home/ubuntu/setup.log 2>&1',
-      
-
-      `echo -e "\n\n\n ----- UPGRADING PIP ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'pip install --upgrade pip >> /home/ubuntu/setup.log 2>&1', // Upgrade pip
-
-
-      `echo -e "\n\n\n ----- PIP INSTALL PIPENV ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'DEBIAN_FRONTEND=noninteractive pip install pipenv >> /home/ubuntu/setup.log 2>&1',
-      
-
-      `echo -e "\n\n\n ----- PIPENV --PYTHON ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'DEBIAN_FRONTEND=noninteractive pipenv --python /usr/bin/python3 >> /home/ubuntu/setup.log 2>&1',
-      
-
-      `echo -e "\n\n\n ----- SETTING ENVIRONMENT VARIABLES ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      'echo "export PIPENV_PATH=$(which pipenv)" >> /home/ubuntu/.profile',
-      'echo "export PIPENV_PIPFILE=/home/ubuntu/db/Pipfile" >> /home/ubuntu/.profile',
-      'source ~/.profile',
-
-      // can't get this to work for some reason; pipenv install runs but dependencies aren't
-      // available unless pipenv install is run again manually after ssh'ing. 
-      // going to try to push this logic to 'cdk_finish.sh' and see what happens.
-      // `echo -e "\n\n\n ----- PIPENV INSTALL ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      // 'cd /home/ubuntu/db',
-      // '$(which pipenv) install --verbose >> /home/ubuntu/setup.log 2>&1',
-      
-      // also didn't work; leaving `pipenv install` as manual step for user
-      // `echo -e "\n\n\n ----- CHMOD AND RUN CDK_FINISH.SH ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-      // 'chmod +x /home/ubuntu/db/setup_scripts/cdk_finish.sh >> /home/ubuntu/setup.log 2>&1',
-      // '/home/ubuntu/db/setup_scripts/cdk_finish.sh >> /home/ubuntu/setup.log 2>&1',
-
-      `echo -e "\n\n\n ----- EC2 USER DATA COMMANDS COMPLETED, PLEASE RUN PIPENV INSTALL IN EC2 ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-    )
+    userData.addCommands(...userDataCommands)
 
     const keyPair = ec2.KeyPair.fromKeyPairAttributes(this, 'KeyPair', {
       keyPairName: process.env.AWS_KEY_PAIR_NAME || '',
@@ -209,7 +162,7 @@ export class Ec23Stack extends cdk.Stack {
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
       },
-      credentials: rds.Credentials.fromPassword('postgres', cdk.SecretValue.unsafePlainText(props?.config.PG_ADMINPW || '')),
+      credentials: rds.Credentials.fromPassword('postgres', cdk.SecretValue.unsafePlainText(process.env.PG_ADMINPW || 'pgadminpw')),
       multiAz: false,
       allocatedStorage: 20,
       maxAllocatedStorage: 100,
@@ -225,5 +178,41 @@ export class Ec23Stack extends cdk.Stack {
     new cdk.CfnOutput(this, 'RDSInstanceEndpoint', {
       value: rdsInstance.instanceEndpoint.hostname,
     });
+
+    // s3
+
+    // Add a Gateway VPC Endpoint for S3
+    const s3GatewayEndpoint = vpc.addGatewayEndpoint('S3GatewayEndpoint', {
+      service: ec2.GatewayVpcEndpointAwsService.S3,
+    });
+
+    const s3Endpoint = new ec2.InterfaceVpcEndpoint(this, 'S3Endpoint', {
+      vpc,
+      service: ec2.InterfaceVpcEndpointAwsService.S3,
+    });
+
+    const bucket = new s3.Bucket(this, `CDKS3Bucket-${INSTANCE_NUM}`, {
+      versioned: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // Deletes S3 along with stack
+      autoDeleteObjects: true, // Deletes S3 contents along with self
+    });
+
+    new cdk.CfnOutput(this, 'S3BucketName', {
+      value: bucket.bucketName,
+    });
+
+    // Restrict access to VPC
+    bucket.addToResourcePolicy(new iam.PolicyStatement({
+      actions: ['s3:*'],
+      resources: [bucket.bucketArn, `${bucket.bucketArn}/*`],
+      principals: [new iam.ArnPrincipal('*')], // Consider specifying specific IAM roles or users
+      conditions: {
+        StringEquals: {
+          'aws:SourceVpce': s3Endpoint.vpcEndpointId
+        }
+      }
+    }));
+
+    bucket.node.addDependency(s3GatewayEndpoint);
   }
 }

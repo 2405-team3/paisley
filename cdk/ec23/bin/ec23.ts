@@ -2,10 +2,10 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { Ec23Stack } from '../lib/ec23-stack';
-import { getConfig } from "../lib/config";
+// import { getConfig } from "../lib/config";
 
 // 1. Retrieving our config and envs
-const config = getConfig();
+// const config = getConfig();
 
 // console.log('CONFIG IS:', config)
 
@@ -18,7 +18,7 @@ new Ec23Stack(app, 'Ec23Stack', {
   //   region: config.REGION,
   // },
 
-  config,
+  // config,
   /* Uncomment the next line to specialize this stack for the AWS Account
    * and Region that are implied by the current CLI configuration. */
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },

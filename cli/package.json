@@ -6,17 +6,21 @@
     "paisley": "cdk_cli.js"
   },
   "scripts": {
-    "start": "node cdk_cli.js"
+    "paisley": "node cdk_cli.js"
   },
   "dependencies": {
+    "aws-cdk-lib": "^2.154.1",
     "aws-sdk": "^2.1676.0",
     "commander": "^12.1.0",
+    "constructs": "^10.3.0",
+    "dotenv": "^16.4.5",
     "inquirer": "^10.1.8"
   },
   "devDependencies": {
     "@types/commander": "^2.12.2",
     "@types/inquirer": "^9.0.7",
-    "@types/node": "^22.2.0"
+    "@types/node": "^22.5.0",
+    "typescript": "^5.5.4"
   },
   "type": "module"
 }

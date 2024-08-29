@@ -1,112 +1,135 @@
-# paisley
+# Paisley
 
-The following is simply a list of steps that have worked so far, if you see any redundancies let's address them before pushing as much of this to scripts/CLI as possible
+Paisley is an open-source framework to help IT or engineering teams quickly set up and deploy chatbots that integrate their data. It achieves this through Retrieval-Augmented Generation (RAG).
 
+Our RAG “starter-kit” enables teams to skip some of the research, easily establish knowledge bases, and more quickly deploy and iterate on RAG chatbots.
 
-install aws-cdk and configure if not already done
+The following steps will show you how to get started deploying Paisley on your own AWS infrastructure. You will need AWS credentials, Node.js, and npm.
+
+## Setup
+Install and configure AWS CDK
 ```
 npm install -g aws-cdk
 aws configure
 ```
 
-
-clone cdk & cli
+Clone the CDK stack and Paisley's CLI
 ```
 git clone https://github.com/paisley-rag/cdk-cli
 ```
 
-
-npm install (can this just be done once from the root folder..?)
+Install dependencies
 ```
-cd /cdk-cli/cdk && npm install
-cd /cdk-cli/cli && npm install
+cd cdk-cli
+npm install --prefix cdk cli cdk/ec23
 ```
-
-
-use CLI to set env variables and deploy your AWS infra
+IF GIT ISSUES (???)
 ```
-cd /cli
-node cdk_cli.js env
-node cdk_cli.js deploy
-```
-keep note of endpoints and IPs printed after deployment
-
-
-
-update ec2 env variables
-```
-bash update_env.sh
+npm install --prefix cdk && npm install --prefix cli && npm install --prefix cdk/ec23
 ```
 
 
-
-use scp to copy local CLI-created .env file into ~/db
+Globally install Paisley CLI package
 ```
-scp -ri [local aws pem key path] [local .env path] ubuntu@[EC2 IP]:~/db/.env
-```
-
-
-ssh into EC2 using Public IPv4 address
-```
-ssh -i [local aws pem key path] ubuntu@[EC2 IP]
+cd cli && npm install -g .
 ```
 
 
-install pipenv dependencies
+Set your environment variables to store in a generated `.env` file
 ```
-cd ~/db && pipenv install --verbose
-```
-
-
-start shell
-```
-cd ~/db && pipenv shell
+paisley env
 ```
 
-
-
-
-get global-bundle.pem for docdb
+## Deployment
+Deploy the Paisley CDK stack on your AWS infrastructure (keep note of endpoints and IPs printed after deployment)
 ```
-wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+paisley deploy
 ```
 
 
-setup postgres
+Copy generated `.env` file to your new EC2 instance
 ```
-bash ~/db/setup_scripts/setup_postgres.sh
-```
-
-
-Now DBs should be connected. Optionally test DocDB with:
-```
-python ~/db/util/list_mongo.py
+paisley copy-env
 ```
 
-
-Copy `celery.service` and `test.service` to `/etc/systemd/system`
+SSH into your EC2
 ```
-sudo cp ~/db/systemd/celery.service ~/db/systemd/test.service /etc/systemd/system && sudo systemctl daemon-reload
+paisley ssh
+```
+You should now be connected to your EC2 in the terminal.
+
+
+Install pipenv dependencies and start shell
+```
+cd ~/db && pipenv install --verbose && pipenv shell 
 ```
 
+Finish provisioning the EC2
+```
+bash ~/db/setup_scripts/setup_ec2.sh
+```
 
-celery.service and test.service should now be runnable with (need to test with fresh instance)
+## Admin - Building the UI
+
+Building the UI requires `nvm` and `vite`.
+
+Install `nvm`
+```
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+```
+
+Restart terminal. SSH back into your EC2 using `paisley ssh` from the `cdk-cli/cli` directory.
+
+
+Download and install Node.js
+```
+nvm install 20
+```
+
+verify install
+```
+node -v && npm -v
+```
+
+Install vite
+```
+cd ~/db/ui && npm install vite --save-dev
+```
+
+Build the UI and transfer the built files
+```
+bash ~/db/setup_scripts/build_ui.sh
+```
+
+## Admin - Starting the Server
+
+Start the backend server
 ```
 sudo systemctl start test.service
+```
+
+Start Celery's task queue
+```
 sudo systemctl start celery.service
 ```
 
+To test that either service is running, use `sudo systemctl status test.service` or `sudo systemctl status celery.service` (press `q` to exit).
 
-...
-
-- test pipenv --venv thing from start_server in start_celery
-- test server/celery
-- auto build SPA?
-
-...
+To stop either service, use `sudo systemctl stop test.service` or `sudo systemctl stop celery.service`.
 
 
-destroy current deployment (from root folder, ie /ec23):
+## Admin - View the Dashboard
+
+Visit the EC2's public IP address in your browser. If you need a reminder of the IP, use:
 ```
-cdk destroy
+grep 'PUBLIC_IP' ~/db/.env
+```
+from within your EC2.
+
+
+## Admin - Teardown
+
+From `/cdk-cli/cli` on your local machine, use:
+```
+paisley destroy
 ```
