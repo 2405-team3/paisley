@@ -69,7 +69,6 @@ export async function setEnv() {
   
   // prompt for new variables
   let userVariables = await inquirer.prompt(ENV_VARIABLES);
-  console.log('USER VARIABLES:', userVariables)
   userVariables = Object.entries(userVariables).map(([key, value]) => `${key}=${value}`)
 
   // append non-user variables
