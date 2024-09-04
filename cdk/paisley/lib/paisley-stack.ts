@@ -12,6 +12,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as docdb from 'aws-cdk-lib/aws-docdb';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 import { userDataCommands } from './user-data-commands';
 
@@ -214,5 +215,19 @@ export class PaisleyStack extends cdk.Stack {
     }));
 
     bucket.node.addDependency(s3GatewayEndpoint);
+
+
+
+    // SQS
+    const queue = new sqs.Queue(this, `SQSQueue-${INSTANCE_NUM}`, {
+      visibilityTimeout: cdk.Duration.seconds(300),
+      retentionPeriod: cdk.Duration.days(4),
+      fifo: true, // instead of standard
+      contentBasedDeduplication: true // makes sqs responsible for not duplicating
+    });
+
+    new cdk.CfnOutput(this, 'SQSURL', {
+      value: queue.queueUrl,
+    });
   }
 }

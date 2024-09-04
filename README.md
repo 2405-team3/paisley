@@ -20,11 +20,6 @@ git clone https://github.com/paisley-rag/cdk-cli
 
 Install dependencies
 ```
-cd cdk-cli
-npm install --prefix cdk cli cdk/paisley
-```
-IF GIT ISSUES (???)
-```
 npm install --prefix cdk && npm install --prefix cli && npm install --prefix cdk/paisley
 ```
 

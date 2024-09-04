@@ -150,7 +150,7 @@ async function cleanEnv() {
 
   if (fs.existsSync(envFilePath)) {
     let envContent = fs.readFileSync(envFilePath, 'utf-8');
-    const variablesToRemove = ['PG_HOST', 'MONGO_URI', 'S3_BUCKET_NAME', 'PUBLIC_IP'];
+    const variablesToRemove = ['PG_HOST', 'MONGO_URI', 'S3_BUCKET_NAME', 'PUBLIC_IP', 'SQS_URL'];
 
     variablesToRemove.forEach(variable => {
       const regex = new RegExp(`^${variable}=.*$`, 'gm');
