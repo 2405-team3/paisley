@@ -57,7 +57,7 @@ const ENV_VARIABLES = [
     {
       type: 'input',
       name: 'AWS_KEY_PAIR_NAME',
-      message: 'Select the name of the AWS key pair you will use:',
+      message: 'Select the name of the AWS key pair you will use (not including file extension):',
     },
     {
       type: 'input',
