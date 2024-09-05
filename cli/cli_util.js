@@ -130,7 +130,7 @@ export async function copyEnv() {
 
 export async function deployCDK(cmdObj) {
   const cdkAppPath = pathFromCurrentDir('../cdk/paisley');
-
+  
   let cdkCommand = cmdObj.verbose ? ['deploy', '--verbose'] : ['deploy'];
   const deployProcess = spawn('cdk', cdkCommand, { cwd: cdkAppPath, stdio: 'inherit' });
 

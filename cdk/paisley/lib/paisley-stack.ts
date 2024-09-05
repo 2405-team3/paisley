@@ -216,8 +216,6 @@ export class PaisleyStack extends cdk.Stack {
 
     bucket.node.addDependency(s3GatewayEndpoint);
 
-
-
     // SQS
     const queue = new sqs.Queue(this, `SQSQueue-${INSTANCE_NUM}`, {
       visibilityTimeout: cdk.Duration.seconds(300),
