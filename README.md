@@ -18,20 +18,20 @@ Clone the CDK stack and Paisley's CLI
 git clone https://github.com/paisley-rag/cdk-cli
 ```
 
+
 Install dependencies
-```
-cd cdk-cli
-npm install --prefix cdk cli cdk/paisley
-```
-IF GIT ISSUES (???)
 ```
 npm install --prefix cdk && npm install --prefix cli && npm install --prefix cdk/paisley
 ```
 
-
-Globally install Paisley CLI package
+Bootstrap CDK environment (from `cdk-cli/cdk/paisley`)
 ```
-cd cli && npm install -g .
+cd cdk-cli/cdk/paisley && cdk bootstrap
+```
+
+Globally install Paisley CLI package (from `cdk-cli/cli`)
+```
+cd ../../cli && npm install -g .
 ```
 
 

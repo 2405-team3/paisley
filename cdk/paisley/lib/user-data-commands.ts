@@ -16,8 +16,8 @@ export const userDataCommands = [
   
 
   `echo -e "\n\n\n ----- GIT CLONE ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-  'git clone https://github.com/paisley-rag/db /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
-  // 'git clone -b fix/cdk2 https://github.com/paisley-rag/db /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
+  'git clone https://github.com/paisley-rag/app /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
+  // 'git clone -b fix/cdk3 https://github.com/paisley-rag/app /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
   'while [ ! -d /home/ubuntu/db ]; do sleep 1; done', // Check if the directory /home/ubuntu/db exists before running the next commands
 
 
@@ -46,12 +46,6 @@ export const userDataCommands = [
   'echo "export PIPENV_PIPFILE=/home/ubuntu/db/Pipfile" >> /home/ubuntu/.profile',
   'source ~/.profile',
   
-  `echo -e "\n\n\n ----- INSTALL NVM AND VITE ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-  'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash >> /home/ubuntu/.profile',
-  'nvm install 20 >> /home/ubuntu/.profile',
-  'node -v && npm -v >> /home/ubuntu/.profile',
-  'npm -C ~/db/ui install vite --save-dev >> /home/ubuntu/.profile',
-
   // can't get this to work for some reason; pipenv install runs but dependencies aren't
   // available unless pipenv install is run again manually after ssh'ing. 
   // going to try to push this logic to 'cdk_finish.sh' and see what happens.
