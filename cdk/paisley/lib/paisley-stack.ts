@@ -222,6 +222,7 @@ export class PaisleyStack extends cdk.Stack {
     const queue = new sqs.Queue(this, `SQSQueue-${INSTANCE_NUM}`, {
       visibilityTimeout: cdk.Duration.seconds(300),
       retentionPeriod: cdk.Duration.days(4),
+      queueName: `SQSQueuePaisley.fifo`,
       fifo: true, // instead of standard
       contentBasedDeduplication: true // makes sqs responsible for not duplicating
     });
