@@ -1,8 +1,31 @@
 {
+  "name": "paisley",
+  "description": "paisley cli",
+  "main": "cli/paisley",
+  "bin": {
+    "paisley": "cli/paisley",
+    "paisley-cdk": "npx tsx cdk/bin/paisley.ts"
+  },
+  "scripts": {
+    "paisley": "node cdk_cli.js",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk"
+  },
   "dependencies": {
-    "aws-cdk-lib": "^2.154.1"
+    "aws-cdk-lib": "^2.154.1",
+    "aws-sdk": "^2.1676.0",
+    "commander": "^12.1.0",
+    "constructs": "^10.3.0",
+    "dotenv": "^16.4.5",
+    "inquirer": "^10.1.8",
+    "source-map-support": "^0.5.21"
   },
   "devDependencies": {
-    "@types/node": "^22.5.0"
-  }
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^22.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4"
+  },
+  "type": "module"
 }

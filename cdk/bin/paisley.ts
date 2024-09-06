@@ -11,7 +11,8 @@ import { PaisleyStack } from '../lib/paisley-stack';
 
 const app = new cdk.App();
 
-new PaisleyStack(app, 'Ec23Stack', {
+console.log('paisley.ts', process.env.CDK_DEFAULT_ACCOUNT, process.env.CDK_DEFAULT_REGION);
+new PaisleyStack(app, 'PaisleyStack', {
   // env: {
   //   // 2. Passing our REGION env to our stack to control the region it's deployed to
   //   account: '<account_id_here>', // paisley's acc?

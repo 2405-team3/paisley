@@ -23,7 +23,7 @@ function checkIPandPemPath() {
     process.exit(1);
   }
   console.log('PUBLIC_IP:', process.env.PUBLIC_IP)
-  
+
   if (!process.env.AWS_PEM_PATH) {
     console.error('AWS_PEM_PATH environment variable is not set. Please run \'env\' first.');
     process.exit(1);
@@ -57,23 +57,55 @@ async function overWriteExistingEnv() {
 
     if (!overwrite) {
       console.log('Operation cancelled by the user.');
-      return;
+      return false;
     } else {
       fs.writeFileSync(envFilePath, '');
+      return true;
     }
   }
 }
 
 export async function setEnv() {
-  await overWriteExistingEnv()
-  
+  let overwrite = await overWriteExistingEnv();
+  if (!overwrite) return;
+
   // prompt for new variables
   let userVariables = await inquirer.prompt(ENV_VARIABLES);
-  userVariables = Object.entries(userVariables).map(([key, value]) => `${key}=${value}`)
 
+  let username = { 'USERNAME': '' };
+  while (!username['USERNAME'] || username['USERNAME'] === 'admin') {
+    username = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'USERNAME',
+        message: 'Select a username for Paisley (not admin):',
+      }
+    ]);
+  }
+
+  userVariables['PAISLEY_ADMIN_USERNAME'] = username['USERNAME'];
+  userVariables['PG_USER'] = username['USERNAME'];
+  userVariables['MONGO_USERNAME'] = username['USERNAME'];
+
+  let masterPw = { 'MASTER_PW': '' };
+  while (masterPw['MASTER_PW'].length < 8) {
+    masterPw = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'MASTER_PW',
+        message: 'Select a password for all databases (minimum 8 characters):',
+      }
+    ]);
+  };
+  userVariables['PAISLEY_ADMIN_PASSWORD'] = masterPw['MASTER_PW'];
+  userVariables['PG_ADMINPW'] = masterPw['MASTER_PW'];
+  userVariables['MONGO_PASSWORD'] = masterPw['MASTER_PW'];
+
+  userVariables = Object.entries(userVariables).map(([key, value]) => `${key}=${value}`)
   // append non-user variables
-  const allVariables = 
+  const allVariables =
     userVariables.join('\n') + '\n' +
+    `PG_DATABASE=paisley\n` +
     `PG_ADMIN=postgres\n` +
     `PG_PORT=5432\n` +
     `DOCDB_NAME=simple\n` +
@@ -114,7 +146,7 @@ export async function copyEnv() {
   const scpCommand = `scp -ri ${process.env.AWS_PEM_PATH} ${envFilePath} ubuntu@${process.env.PUBLIC_IP}:~/db/.env`;
   console.log('SCP COMMAND IN COPYENV IS:', scpCommand)
   const scpProcess = spawn('bash', ['-c', scpCommand], { stdio: 'inherit' });
-  
+
   return new Promise((resolve, reject) => {
     scpProcess.on('close', (code) => {
       if (code !== 0) {
@@ -129,8 +161,8 @@ export async function copyEnv() {
 }
 
 export async function deployCDK(cmdObj) {
-  const cdkAppPath = pathFromCurrentDir('../cdk/paisley');
-  
+  const cdkAppPath = pathFromCurrentDir('../cdk');
+
   let cdkCommand = cmdObj.verbose ? ['deploy', '--verbose'] : ['deploy'];
   const deployProcess = spawn('cdk', cdkCommand, { cwd: cdkAppPath, stdio: 'inherit' });
 
