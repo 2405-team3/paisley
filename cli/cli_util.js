@@ -18,6 +18,8 @@ function envPath() {
 }
 
 function checkIPandPemPath() {
+  console.log('checkIPandPemPath', process.env.PUBLIC_IP);
+
   if (!process.env.PUBLIC_IP) {
     console.error('PUBLIC_IP environment variable is not set.');
     process.exit(1);
@@ -138,6 +140,9 @@ async function updateEnv() {
 }
 
 export async function copyEnv() {
+  updateEnv();
+  console.log('env updated with recently deployed config');
+
   const envFilePath = envPath();
   dotenv.config({ path: envFilePath, override: true });
 

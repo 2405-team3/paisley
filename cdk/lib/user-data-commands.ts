@@ -47,6 +47,14 @@ export const userDataCommands = [
   'echo "export PIPENV_PIPFILE=/home/ubuntu/db/Pipfile" >> /home/ubuntu/.profile',
   'source ~/.profile',
 
+
+
+  `echo -e "\n\n\n ----- PIPENV INSTALL ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
+  // 'cd /home/ubuntu/db && pipenv run pip install requirements.txt',
+  'chmod +x /home/ubuntu/db/setup_scripts/debug_pipenv.sh >> /home/ubuntu/setup.log 2>&1',
+  '/home/ubuntu/db/setup_scripts/debug_pipenv.sh',
+  `echo -e "\n\n\n ----- PIPENV INSTALL finished ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
+
   // can't get this to work for some reason; pipenv install runs but dependencies aren't
   // available unless pipenv install is run again manually after ssh'ing. 
   // going to try to push this logic to 'cdk_finish.sh' and see what happens.
