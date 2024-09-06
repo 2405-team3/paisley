@@ -51,7 +51,9 @@ export const userDataCommands = [
 
   `echo -e "\n\n\n ----- PIPENV INSTALL ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
   // 'cd /home/ubuntu/db && pipenv run pip install requirements.txt',
+  `echo -e "\n changing permissions - chmod \n" >> /home/ubuntu/setup.log 2>&1`,
   'chmod +x /home/ubuntu/db/setup_scripts/debug_pipenv.sh >> /home/ubuntu/setup.log 2>&1',
+  `echo -e "\n executing script: debug_pipenv.sh \n" >> /home/ubuntu/setup.log 2>&1`,
   '/home/ubuntu/db/setup_scripts/debug_pipenv.sh',
   `echo -e "\n\n\n ----- PIPENV INSTALL finished ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
 
