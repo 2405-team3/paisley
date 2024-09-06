@@ -1,5 +1,5 @@
 {
-  "app": "npx tsx bin/paisley.ts",
+  "app": "npx tsx bin/paisley-ec2.ts",
   "watch": {
     "include": [
       "**"
