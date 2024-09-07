@@ -31,15 +31,15 @@ export const userDataCommands = [
 
 
   `echo -e "\n\n\n ----- UPGRADING PIP ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-  'pip install --upgrade pip >> /home/ubuntu/setup.log 2>&1', // Upgrade pip
+  `pip install --upgrade pip >> /home/ubuntu/setup.log 2>&1`, // Upgrade pip
 
 
   `echo -e "\n\n\n ----- PIP INSTALL PIPENV ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-  'DEBIAN_FRONTEND=noninteractive pip install pipenv >> /home/ubuntu/setup.log 2>&1',
+  `DEBIAN_FRONTEND=noninteractive pip install pipenv >> /home/ubuntu/setup.log 2>&1`,
 
 
   `echo -e "\n\n\n ----- PIPENV --PYTHON ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-  'DEBIAN_FRONTEND=noninteractive pipenv --python /usr/bin/python3 >> /home/ubuntu/setup.log 2>&1',
+  `DEBIAN_FRONTEND=noninteractive pipenv --python /usr/bin/python3 >> /home/ubuntu/setup.log 2>&1`,
 
 
   `echo -e "\n\n\n ----- SETTING ENVIRONMENT VARIABLES ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
@@ -49,13 +49,6 @@ export const userDataCommands = [
 
 
 
-  `echo -e "\n\n\n ----- PIPENV INSTALL ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-  // 'cd /home/ubuntu/db && pipenv run pip install requirements.txt',
-  `echo -e "\n changing permissions - chmod \n" >> /home/ubuntu/setup.log 2>&1`,
-  'chmod +x /home/ubuntu/db/setup_scripts/debug_pipenv.sh >> /home/ubuntu/setup.log 2>&1',
-  `echo -e "\n executing script: debug_pipenv.sh \n" >> /home/ubuntu/setup.log 2>&1`,
-  '/home/ubuntu/db/setup_scripts/debug_pipenv.sh',
-  `echo -e "\n\n\n ----- PIPENV INSTALL finished ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
 
   // can't get this to work for some reason; pipenv install runs but dependencies aren't
   // available unless pipenv install is run again manually after ssh'ing. 
@@ -75,4 +68,18 @@ export const userDataCommands = [
   // 'pipenv install --verbose >> /home/ubuntu/setup.log 2>&1',
 
   `echo -e "\n\n\n ----- EC2 USER DATA COMMANDS COMPLETED, PLEASE RUN PIPENV INSTALL IN EC2 ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
-]
+];
+
+
+export const pipenvCommands = [
+  `echo -e "\n\n\n ----- PIPENV INSTALL ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
+  // 'cd /home/ubuntu/db && pipenv run pip install requirements.txt',
+  `echo -e "\n changing permissions - chmod \n" >> /home/ubuntu/setup.log 2>&1`,
+  'chmod +x /home/ubuntu/db/setup_scripts/debug_pipenv.sh >> /home/ubuntu/setup.log 2>&1',
+  `echo -e "\n executing script: debug_pipenv.sh \n" >> /home/ubuntu/setup.log 2>&1`,
+  `/home/ubuntu/db/setup_scripts/debug_pipenv.sh`,
+
+  // `echo -e "\n executing pipenv install \n" >> /home/ubuntu/setup.log 2>&1`,
+  // `su -c 'PIPENV_PIPFILE=/home/ubuntu/db/Pipfile pipenv install --verbose' ubuntu >> /home/ubuntu/setup.log 2>&1`,
+  `echo -e "\n\n\n ----- PIPENV INSTALL finished ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
+];

@@ -15,7 +15,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 // import * as s3 from 'aws-cdk-lib/aws-s3';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
-import { userDataCommands } from './user-data-commands';
+import { userDataCommands, pipenvCommands } from './user-data-commands';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -79,7 +79,8 @@ export class PaisleyEc2Stack extends cdk.Stack {
     const userData = ec2.UserData.forLinux();
 
 
-    userData.addCommands(...userDataCommands)
+    userData.addCommands(...userDataCommands);
+    userData.addCommands(...pipenvCommands);
 
     const keyPair = ec2.KeyPair.fromKeyPairAttributes(this, 'KeyPair', {
       keyPairName: process.env.AWS_KEY_PAIR_NAME || '',

@@ -6,7 +6,10 @@ import {
   deployCDK,
   destroyCDK,
   copyEnv,
-  ssh
+  ssh,
+  checkIPandPemPath,
+  setupEc2,
+  allSteps,
 } from './cli_util.js';
 
 const program = new Command();
@@ -17,6 +20,16 @@ program
   .helpOption('-h, --help', 'Display help for command');
 
 program
+  .name('allsteps')
+  .description('all steps')
+  .action(allSteps)
+
+// program
+//   .name('pause')
+//   .description('Pause for 30s to allow background processing to occur')
+//   .action(pause)
+
+program
   .command('env')
   .description('Allows user to set their environment variables and API keys')
   .action(setEnv)
@@ -24,13 +37,13 @@ program
 program
   .command('deploy')
   .option('-v, --verbose', 'Run cdk deploy --verbose')
-  .description('Builds, synthesizes, and deploys Paisley on AWS')
+  .description('Synthesizes, and deploys Paisley on AWS using AWS CDK')
   .action(deployCDK)
 
 program
   .command('destroy')
   .option('-v, --verbose', 'Run cdk destroy --verbose')
-  .description('Destroys Paisley AWS infrastructure')
+  .description('Tear down deployed Paisley AWS infrastructure')
   .action(destroyCDK)
 
 program
@@ -42,5 +55,15 @@ program
   .command('ssh')
   .description('SSH into the new EC2 instance')
   .action(ssh)
+
+program
+  .command('check-env')
+  .description('Check if PUBLIC_IP is part of .env')
+  .action(checkIPandPemPath)
+
+program
+  .command('setup-ec2')
+  .description('run setup_ec2.sh script on new ec2 instance')
+  .action(setupEc2)
 
 program.parse(process.argv);

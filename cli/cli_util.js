@@ -17,7 +17,35 @@ function envPath() {
   return pathFromCurrentDir('../.env')
 }
 
-function checkIPandPemPath() {
+function getEnv() {
+  const envFilePath = envPath();
+  dotenv.config({ path: envFilePath, override: true });
+}
+
+export async function pause() {
+  console.log('********* Please wait 30s - completing server setup ************');
+  await new Promise(resolve => {
+    const int = setInterval(()=>console.log('.'), 1000);
+    setTimeout(() => {
+      clearInterval(int);
+      resolve()
+    }, 30000);
+  });
+  console.log('processing final steps');
+}
+
+export async function allSteps() {
+  console.log('executing all steps');
+  // await setEnv();
+  // await deployCDK();
+  // await pause();
+  await copyEnv();
+  await setupEc2();
+}
+
+
+export async function checkIPandPemPath() {
+  getEnv();
   console.log('checkIPandPemPath', process.env.PUBLIC_IP);
 
   if (!process.env.PUBLIC_IP) {
@@ -31,11 +59,11 @@ function checkIPandPemPath() {
     process.exit(1);
   }
   console.log('AWS_PEM_PATH:', process.env.AWS_PEM_PATH)
+  return true;
 }
 
 async function writeToEnv(content) {
-  const envFilePath = envPath();
-  dotenv.config({ path: envFilePath, override: true });
+  getEnv();
 
   if (fs.existsSync(envFilePath)) {
     fs.appendFileSync(envFilePath, `\n${content.trim()}`);
@@ -140,13 +168,13 @@ async function updateEnv() {
 }
 
 export async function copyEnv() {
-  updateEnv();
+  await updateEnv();
   console.log('env updated with recently deployed config');
 
+  getEnv();
   const envFilePath = envPath();
-  dotenv.config({ path: envFilePath, override: true });
 
-  checkIPandPemPath()
+  await checkIPandPemPath()
 
   const scpCommand = `scp -ri ${process.env.AWS_PEM_PATH} ${envFilePath} ubuntu@${process.env.PUBLIC_IP}:~/db/.env`;
   console.log('SCP COMMAND IN COPYENV IS:', scpCommand)
@@ -163,6 +191,27 @@ export async function copyEnv() {
       }
     });
   })
+}
+
+export async function setupEc2() {
+  getEnv();
+
+  const setupEc2ScriptPath = pathFromCurrentDir('setup_ec2.sh');
+  const command = `ssh -i ${process.env.AWS_PEM_PATH} ubuntu@${process.env.PUBLIC_IP} 'bash -s' < ${setupEc2ScriptPath}`;
+  console.log('setupEc2 command:', command);
+  const scriptProcess = spawn('bash', ['-c', command], { stdio: 'inherit' });
+
+  return new Promise((res, rej) => {
+    scriptProcess.on('close', (code) => {
+      if (code !== 0) {
+        console.error(`setupEc2 failed with code ${code}`);
+        rej(new Error(`setupEc2 script failed with code ${code}`));
+      } else {
+        console.log('setupEc2 script executed successfully');
+        res();
+      }
+    });
+  });
 }
 
 export async function deployCDK(cmdObj) {
@@ -186,7 +235,7 @@ async function cleanEnv() {
   const envFilePath = envPath();
 
   if (fs.existsSync(envFilePath)) {
-    let envContent = fs.readFileSync(envFilePath, 'utf-8');
+    let envContent = await fs.readFileSync(envFilePath, 'utf-8');
     const variablesToRemove = ['PG_HOST', 'MONGO_URI', 'S3_BUCKET_NAME', 'PUBLIC_IP', 'SQS_URL'];
 
     variablesToRemove.forEach(variable => {
@@ -226,7 +275,7 @@ export async function ssh() {
   const envFilePath = envPath();
   dotenv.config({ path: envFilePath, override: true });
 
-  checkIPandPemPath()
+  await checkIPandPemPath()
 
   const sshCommand = `ssh -i ${process.env.AWS_PEM_PATH} ubuntu@${process.env.PUBLIC_IP}`;
   const sshProcess = spawn('bash', ['-c', sshCommand], { stdio: 'inherit' });
