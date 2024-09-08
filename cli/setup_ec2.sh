@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # get global-bundle.pem for docdb
-cd ~ && wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -P /home/ubuntu/db &&
+cd ~ && wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem &&
 
 	# setup postgres
 	sudo bash ~/db/setup_scripts/setup_postgres.sh &&
@@ -11,8 +11,8 @@ cd ~ && wget https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -
 	sudo systemctl daemon-reload &&
 
 	# Give permissions for backend server and celery start scripts for use by systemd
-	sudo chmod +x /home/ubuntu/db/util/start_server.sh &&
-	sudo chmod +x /home/ubuntu/db/util/start_celery.sh &&
+	# sudo chmod +x /home/ubuntu/db/util/start_server.sh &&
+	# sudo chmod +x /home/ubuntu/db/util/start_celery.sh &&
 
 	# Configure nginx
 	sudo cp ~/db/nginx/default /etc/nginx/sites-enabled &&
@@ -32,7 +32,7 @@ if [[ -e /var/www/html/index.html && -d /var/www/html/assets ]]; then
 	fi
 fi
 
-# move build files
+# copy build files
 sudo cp -r ~/db/ui/dist/assets /var/www/html &&
 	sudo cp ~/db/ui/dist/index.html /var/www/html &&
 	sudo cp ~/db/ui/public/favicon.ico /var/www/html &&

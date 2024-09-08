@@ -78,8 +78,11 @@ export class PaisleyStack extends cdk.Stack {
     // Start-up actions (application code)
     const userData = ec2.UserData.forLinux();
 
-
-    userData.addCommands(...userDataCommands)
+    userData.addCommands(...userDataCommands["s1update"]);
+    userData.addCommands(...userDataCommands["s2nginx"]);
+    userData.addCommands(...userDataCommands["s3gitclone"]);
+    userData.addCommands(...userDataCommands["s4python"]);
+    userData.addCommands(...userDataCommands["s5requirements"]);
 
     const keyPair = ec2.KeyPair.fromKeyPairAttributes(this, 'KeyPair', {
       keyPairName: process.env.AWS_KEY_PAIR_NAME || '',

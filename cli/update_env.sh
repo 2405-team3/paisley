@@ -10,8 +10,10 @@ if [ -f "$ENV_LOC" ]; then
 fi
 
 # Run the AWS CLI command and store the output in a variable
-INSTANCE_PUBLIC_IP=$(aws cloudformation describe-stacks --stack-name PaisleyEc2Stack --query "Stacks[0].Outputs[?OutputKey=='InstancePublicIP'].OutputValue" --output text) ||
-{
+if aws cloudformation describe-stacks --stack-name PaisleyEc2Stack --query "Stacks[0].Outputs[?OutputKey=='InstancePublicIP'].OutputValue" --output text 2>/dev/null;
+then
+  INSTANCE_PUBLIC_IP=$(aws cloudformation describe-stacks --stack-name PaisleyEc2Stack --query "Stacks[0].Outputs[?OutputKey=='InstancePublicIP'].OutputValue" --output text)
+else
 	INSTANCE_PUBLIC_DNS=$(aws cloudformation describe-stacks --stack-name PaisleyStack --query "Stacks[0].Outputs[?OutputKey=='InstancePublicDNS'].OutputValue" --output text)
 	DOCUMENT_DB_ENDPOINT=$(aws cloudformation describe-stacks --stack-name PaisleyStack --query "Stacks[0].Outputs[?OutputKey=='DocumentDBEndpoint'].OutputValue" --output text)
 	RDS_INSTANCE_ENDPOINT=$(aws cloudformation describe-stacks --stack-name PaisleyStack --query "Stacks[0].Outputs[?OutputKey=='RDSInstanceEndpoint'].OutputValue" --output text)
@@ -27,8 +29,8 @@ INSTANCE_PUBLIC_IP=$(aws cloudformation describe-stacks --stack-name PaisleyEc2S
 	echo "MONGO_URI=$MONGO_URI" >>"$ENV_LOC"
 	echo "SQS_URL=$SQS_URL" >>"$ENV_LOC"
 	echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >>"$ENV_LOC"
-
-}
+fi
 
 # Write the output to the .env file
+echo -e "\n" >>"$ENV_LOC"
 echo "PUBLIC_IP=$INSTANCE_PUBLIC_IP" >>"$ENV_LOC"

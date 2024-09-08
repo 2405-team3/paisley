@@ -15,13 +15,12 @@ import {
 const program = new Command();
 
 program
-  .name('Paisley CLI')
-  .description('A CLI tool to manage environment variables and deploy Paisley onto your AWS.')
-  .helpOption('-h, --help', 'Display help for command');
+  .name('paisley')
+  .description('Paisley CLI tool to manage environment variables and interact with Paisley on your AWS.')
 
 program
-  .name('allsteps')
-  .description('all steps')
+  .command('start')
+  .description('For first time use, executes the following steps in sequence: "env", "deploy", "copy-env", "initiate"')
   .action(allSteps)
 
 // program
@@ -31,39 +30,37 @@ program
 
 program
   .command('env')
-  .description('Allows user to set their environment variables and API keys')
+  .description('Change environment variables and API keys within the .env')
   .action(setEnv)
 
 program
   .command('deploy')
-  .option('-v, --verbose', 'Run cdk deploy --verbose')
   .description('Synthesizes, and deploys Paisley on AWS using AWS CDK')
   .action(deployCDK)
 
 program
-  .command('destroy')
-  .option('-v, --verbose', 'Run cdk destroy --verbose')
-  .description('Tear down deployed Paisley AWS infrastructure')
-  .action(destroyCDK)
-
-program
   .command('copy-env')
-  .description('Updates environment variables with information from created AWS stack')
+  .description('Updates environment variables within .env after deploying to AWS')
   .action(copyEnv)
 
 program
+  .command('initiate')
+  .description('Executes final DB, UI, and Paisley server intiation')
+  .action(setupEc2)
+
+program
   .command('ssh')
-  .description('SSH into the new EC2 instance')
+  .description('SSH into the deployed EC2 instance')
   .action(ssh)
 
 program
   .command('check-env')
-  .description('Check if PUBLIC_IP is part of .env')
+  .description('Check PUBLIC_IP of deployed Paisley instance from .env')
   .action(checkIPandPemPath)
 
 program
-  .command('setup-ec2')
-  .description('run setup_ec2.sh script on new ec2 instance')
-  .action(setupEc2)
+  .command('destroy')
+  .description('Tear down deployed Paisley AWS infrastructure')
+  .action(destroyCDK)
 
 program.parse(process.argv);
