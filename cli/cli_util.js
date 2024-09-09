@@ -62,7 +62,7 @@ export async function deployCDK() {
     });
 
     deployProcess.on('close', async (code) => {
-        await updateEnv();
+        // await updateEnv();
         console.log(`CDK deployment complete\n\n`);
         console.log(` `);
         res('CDK deployment complete');
