@@ -156,6 +156,7 @@ export async function setEnv() {
   };
   userVariables['PAISLEY_ADMIN_PASSWORD'] = masterPw['MASTER_PW'];
   userVariables['PG_ADMINPW'] = masterPw['MASTER_PW'];
+  userVariables['PG_PASSWORD'] = masterPw['MASTER_PW'];
   userVariables['MONGO_PASSWORD'] = masterPw['MASTER_PW'];
 
   userVariables = Object.entries(userVariables).map(([key, value]) => `${key}=${value}`)

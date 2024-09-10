@@ -21,8 +21,8 @@ export const userDataCommands: UserDataCommands = {
   "s3gitclone": [
     `echo -e "\n\n\n ----- GIT CLONE ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
     // *****  Note specific branch is being pulled here
-    // 'git clone https://github.com/paisley-rag/app /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
-    'git clone https://github.com/paisley-rag/app --branch fix/for-cdk-cli /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
+    'git clone https://github.com/paisley-rag/app /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
+    // 'git clone https://github.com/paisley-rag/app --branch fix/for-cdk-cli /home/ubuntu/db >> /home/ubuntu/setup.log 2>&1',
     'while [ ! -d /home/ubuntu/db ]; do sleep 1; done', // Check if the directory /home/ubuntu/db exists before running the next commands
 
     `echo -e "\n\n\n ----- CHMOD DB ----- \n\n\n" >> /home/ubuntu/setup.log 2>&1`,
