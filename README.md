@@ -6,7 +6,7 @@ Our RAG “starter-kit” enables teams to skip some of the research, easily est
 
 The following steps will show you how to get started deploying Paisley on your own AWS infrastructure. You will need AWS credentials, Node.js, and npm.
 
-## Setup
+## Preparation
 Install and configure AWS CDK
 ```
 npm install -g aws-cdk
@@ -28,6 +28,7 @@ Bootstrap CDK environment (from `cdk-cli/cdk`)
 cd cdk-cli/cdk && cdk bootstrap
 ```
 
+## Setup
 Run Paisley initial setup
 ```
 npx paisley start 
