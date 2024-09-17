@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { PaisleyStack } from '../lib/paisley-stack';
+import { PaisleyEc2Stack } from '../lib/paisley-ec2';
 // import { getConfig } from "../lib/config";
 
 // 1. Retrieving our config and envs
@@ -11,7 +11,8 @@ import { PaisleyStack } from '../lib/paisley-stack';
 
 const app = new cdk.App();
 
-new PaisleyStack(app, 'Ec23Stack', {
+console.log('paisley.ts', process.env.CDK_DEFAULT_ACCOUNT, process.env.CDK_DEFAULT_REGION);
+new PaisleyEc2Stack(app, 'PaisleyEc2Stack', {
   // env: {
   //   // 2. Passing our REGION env to our stack to control the region it's deployed to
   //   account: '<account_id_here>', // paisley's acc?

@@ -6,6 +6,7 @@ import { Construct } from 'constructs';
 
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -16,8 +17,10 @@ import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 import { userDataCommands } from './user-data-commands';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, '../../../.env'), override: true });
+dotenv.config({ path: path.resolve(__dirname, '../../.env'), override: true });
 
 // type AwsEnvStackProps = cdk.StackProps & {
 //   config: Readonly<ConfigProps>;
@@ -25,14 +28,14 @@ dotenv.config({ path: path.resolve(__dirname, '../../../.env'), override: true }
 
 type AwsEnvStackProps = cdk.StackProps
 
-const INSTANCE_NUM = process.env.AWS_IDENTIFIER || 'PAISLEY'
+const PREFIX = process.env.AWS_IDENTIFIER || 'PAISLEY'
 
 export class PaisleyStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: AwsEnvStackProps) {
     super(scope, id, props);
 
     // Create a VPC (Virtual Private Cloud)
-    const vpc = new ec2.Vpc(this, `CDKVpc-${INSTANCE_NUM}`, {
+    const vpc = new ec2.Vpc(this, `${PREFIX}-CDKVpc`, {
       maxAzs: 2, // Default is all AZs in the region
     });
 
@@ -75,8 +78,11 @@ export class PaisleyStack extends cdk.Stack {
     // Start-up actions (application code)
     const userData = ec2.UserData.forLinux();
 
-
-    userData.addCommands(...userDataCommands)
+    userData.addCommands(...userDataCommands["s1update"]);
+    userData.addCommands(...userDataCommands["s2nginx"]);
+    userData.addCommands(...userDataCommands["s3gitclone"]);
+    userData.addCommands(...userDataCommands["s4python"]);
+    userData.addCommands(...userDataCommands["s5requirements"]);
 
     const keyPair = ec2.KeyPair.fromKeyPairAttributes(this, 'KeyPair', {
       keyPairName: process.env.AWS_KEY_PAIR_NAME || '',
@@ -84,10 +90,10 @@ export class PaisleyStack extends cdk.Stack {
     })
 
     // Create an EC2 instance
-    const instance = new ec2.Instance(this, `CDKEC2-${INSTANCE_NUM}`, {
+    const instance = new ec2.Instance(this, `${PREFIX}-CDKEc2`, {
       vpc,
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MEDIUM),
-      machineImage: ubuntuAmi, 
+      machineImage: ubuntuAmi,
       securityGroup: ec2SecurityGroup,
       role: ec2Role,
       keyPair: keyPair,
@@ -98,8 +104,8 @@ export class PaisleyStack extends cdk.Stack {
       associatePublicIpAddress: true,
       blockDevices: [
         {
-            deviceName: '/dev/sda1',
-            volume: ec2.BlockDeviceVolume.ebs(25), // Set the volume size to 25GB
+          deviceName: '/dev/sda1',
+          volume: ec2.BlockDeviceVolume.ebs(25), // Set the volume size to 25GB
         }
       ],// Ensure the instance gets a public IP address
     });
@@ -123,8 +129,8 @@ export class PaisleyStack extends cdk.Stack {
     )
 
     // docdb cluster
-    const docdbCluster = new docdb.DatabaseCluster(this, `CDKDocDBCluster-${INSTANCE_NUM}`, {
-      masterUser: { 
+    const docdbCluster = new docdb.DatabaseCluster(this, `${PREFIX}-CDKDocDBCluster`, {
+      masterUser: {
         username: process.env.MONGO_USERNAME || 'docdbadmin',
         password: cdk.SecretValue.unsafePlainText(process.env.MONGO_PASSWORD || 'docdbadmin')
       },
@@ -141,7 +147,7 @@ export class PaisleyStack extends cdk.Stack {
       value: docdbCluster.clusterEndpoint.hostname,
     });
 
-    
+
 
 
     // below is untested
@@ -153,7 +159,7 @@ export class PaisleyStack extends cdk.Stack {
       ec2SecurityGroup, ec2.Port.tcp(5432), 'Allow PostgreSQL access from EC2 security group'
     );
 
-    const rdsInstance = new rds.DatabaseInstance(this, `CDKRDSInstance-${INSTANCE_NUM}`, {
+    const rdsInstance = new rds.DatabaseInstance(this, `${PREFIX}-CDKRdsInstance`, {
       engine: rds.DatabaseInstanceEngine.postgres({
         version: rds.PostgresEngineVersion.VER_13,
       }),
@@ -183,41 +189,41 @@ export class PaisleyStack extends cdk.Stack {
     // s3
 
     // Add a Gateway VPC Endpoint for S3
-    const s3GatewayEndpoint = vpc.addGatewayEndpoint('S3GatewayEndpoint', {
-      service: ec2.GatewayVpcEndpointAwsService.S3,
-    });
-
-    const s3Endpoint = new ec2.InterfaceVpcEndpoint(this, 'S3Endpoint', {
-      vpc,
-      service: ec2.InterfaceVpcEndpointAwsService.S3,
-    });
-
-    const bucket = new s3.Bucket(this, `CDKS3Bucket-${INSTANCE_NUM}`, {
-      versioned: true,
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // Deletes S3 along with stack
-      autoDeleteObjects: true, // Deletes S3 contents along with self
-    });
-
-    new cdk.CfnOutput(this, 'S3BucketName', {
-      value: bucket.bucketName,
-    });
-
-    // Restrict access to VPC
-    bucket.addToResourcePolicy(new iam.PolicyStatement({
-      actions: ['s3:*'],
-      resources: [bucket.bucketArn, `${bucket.bucketArn}/*`],
-      principals: [new iam.ArnPrincipal('*')], // Consider specifying specific IAM roles or users
-      conditions: {
-        StringEquals: {
-          'aws:SourceVpce': s3Endpoint.vpcEndpointId
-        }
-      }
-    }));
-
-    bucket.node.addDependency(s3GatewayEndpoint);
+        const s3GatewayEndpoint = vpc.addGatewayEndpoint('S3GatewayEndpoint', {
+          service: ec2.GatewayVpcEndpointAwsService.S3,
+        });
+    
+        const s3Endpoint = new ec2.InterfaceVpcEndpoint(this, 'S3Endpoint', {
+          vpc,
+          service: ec2.InterfaceVpcEndpointAwsService.S3,
+        });
+    
+        const bucket = new s3.Bucket(this, `${PREFIX}-CDKS3`, {
+          versioned: true,
+          removalPolicy: cdk.RemovalPolicy.DESTROY, // Deletes S3 along with stack
+          autoDeleteObjects: true, // Deletes S3 contents along with self
+        });
+    
+        new cdk.CfnOutput(this, 'S3BucketName', {
+          value: bucket.bucketName,
+        });
+    
+        // Restrict access to VPC
+        bucket.addToResourcePolicy(new iam.PolicyStatement({
+          actions: ['s3:*'],
+          resources: [bucket.bucketArn, `${bucket.bucketArn}/*`],
+          principals: [new iam.ArnPrincipal('*')], // Consider specifying specific IAM roles or users
+          conditions: {
+            StringEquals: {
+              'aws:SourceVpce': s3Endpoint.vpcEndpointId
+            }
+          }
+        }));
+    
+        bucket.node.addDependency(s3GatewayEndpoint);
 
     // SQS
-    const queue = new sqs.Queue(this, `SQSQueue-${INSTANCE_NUM}`, {
+    const queue = new sqs.Queue(this, `${PREFIX}-CDKSqs`, {
       visibilityTimeout: cdk.Duration.seconds(300),
       retentionPeriod: cdk.Duration.days(4),
       queueName: `SQSQueuePaisley.fifo`,
