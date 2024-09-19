@@ -64,6 +64,11 @@ const ENV_VARIABLES = [
     name: 'AWS_PEM_PATH',
     message: 'Enter an absolute path to your AWS pem key file (including the pem filename):',
   },
+  {
+    type: 'input',
+    name: 'JWT_SECRET_KEY',
+    message: 'Enter a string to be used as a secret key to generate JWT tokens:',
+  },
 ];
 
 export default ENV_VARIABLES;
