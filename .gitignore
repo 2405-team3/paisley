@@ -1,4 +1,5 @@
 node_modules/
+*.env
 .env
 cdk.context.json
 **/cdk.context.json

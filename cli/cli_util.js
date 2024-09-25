@@ -26,7 +26,7 @@ export async function pause() {
   console.log('********* Please wait 10 min while completing server setup ************');
   await new Promise(resolve => {
     let num = 0;
-    const int = setInterval(()=>{
+    const int = setInterval(() => {
       num += 1;
       console.log(`${num} min${num > 1 ? 's' : ''} elapsed`);
     }, 60000);
@@ -57,15 +57,15 @@ export async function deployCDK() {
     const deployProcess = spawn('cdk', ['deploy'], { cwd: cdkAppPath, stdio: 'inherit' });
 
     deployProcess.on('error', (error) => {
-        console.error(`CDK deployment failed with error: ${error.message}`);
-        rej(new Error(error.message));
+      console.error(`CDK deployment failed with error: ${error.message}`);
+      rej(new Error(error.message));
     });
 
     deployProcess.on('close', async (code) => {
-        // await updateEnv();
-        console.log(`CDK deployment complete\n\n`);
-        console.log(` `);
-        res('CDK deployment complete');
+      // await updateEnv();
+      console.log(`CDK deployment complete\n\n`);
+      console.log(` `);
+      res('CDK deployment complete');
     });
   });
 }
@@ -277,12 +277,12 @@ export async function destroyCDK() {
   const destroyProcess = spawn('cdk', ['destroy'], { cwd: cdkAppPath, stdio: 'inherit' });
 
   destroyProcess.on('error', (error) => {
-      console.error(`CDK tear down failed with error: ${error.message}\n\n`);
+    console.error(`CDK tear down failed with error: ${error.message}\n\n`);
   });
 
   destroyProcess.on('close', async (code) => {
-      await cleanEnv();
-      console.log(`CDK tear down complete with code ${code}\n\n`);
+    await cleanEnv();
+    console.log(`CDK tear down complete with code ${code}\n\n`);
   });
 }
 
